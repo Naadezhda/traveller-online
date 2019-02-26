@@ -1,4 +1,4 @@
-package finalproject.javaee.model;
+package finalproject.javaee.model.pojo;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;

@@ -1,8 +1,8 @@
 package finalproject.javaee.controller;
 
-import finalproject.javaee.model.Category;
-import finalproject.javaee.model.Post;
-import finalproject.javaee.model.PostRepository;
+import finalproject.javaee.model.pojo.Category;
+import finalproject.javaee.model.pojo.Post;
+import finalproject.javaee.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +34,7 @@ public class PostController {
     }
 
     private Post toPost(ResultSet resultSet) throws SQLException {
-        Post post = new Post(resultSet.getString("descr"));
+        Post post = new Post(resultSet.getString("description"));
         return post;
     }
 
