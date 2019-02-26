@@ -14,11 +14,11 @@ import java.time.LocalDateTime;
 public class Post {
 
     private long id;
-    private String descr;
+    private String descriprion;
     private LocalDateTime date;
 
-    public Post(String descr) {
-        this.descr = descr;
-        date = LocalDateTime.now();
+    public Post(String descriprion) {
+        this.descriprion = descriprion;
+        this.date = LocalDateTime.now();
     }
 }
