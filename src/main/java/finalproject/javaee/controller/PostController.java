@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -18,10 +19,10 @@ public class PostController {
 
     @Autowired
     private PostRepository postRepository;
-
     private JdbcTemplate jdbcTemplate;
-
     @GetMapping(value = "/posts/userId")
+
+
     public List<Post> getPostsByUserId(long id){
         List<Post> posts = jdbcTemplate.query("SELECT description, location_id, categories_id, date FROM posts as p WHERE p.id = id", (resultSet, i) -> toPost(resultSet));
         return posts;

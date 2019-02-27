@@ -1,13 +1,15 @@
 package finalproject.javaee.model.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+import javax.validation.constraints.Size;
 
-    @NoArgsConstructor
+@NoArgsConstructor
+    @AllArgsConstructor
     @Getter
     @Setter
     @Entity
@@ -17,23 +19,17 @@ import javax.persistence.*;
         @Id
         @GeneratedValue(strategy= GenerationType.IDENTITY)
         private long id;
+        @Column
         private String username;
+        @Size(min=6)
         private String password;
-        private String validatePassword;
+        @Transient
+        @Size(min=6)
+        private String verifyPassword;
         private String firstName;
         private String lastName;
         private String email;
         private String photo;
         private String gender;
 
-        public User(long id, String username, String password, String validatePassword, String firstName, String lastName, String email, String gender) {
-            this.id = id;
-            this.username = username;
-            this.password = password;
-            this.validatePassword = validatePassword;
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.email = email;
-            this.gender = gender;
-        }
 }
