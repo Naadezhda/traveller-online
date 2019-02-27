@@ -1,4 +1,4 @@
-package finalproject.javaee.model;
+package finalproject.javaee.model.pojo;
 
 public class Country {
 }

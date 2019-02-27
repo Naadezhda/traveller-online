@@ -1,11 +1,11 @@
-package finalproject.javaee.model;
+package finalproject.javaee.model.pojo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
+
 
     @NoArgsConstructor
     @Getter
@@ -36,4 +36,5 @@ import javax.persistence.*;
             this.email = email;
             this.gender = gender;
         }
+
 }

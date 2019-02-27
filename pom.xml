@@ -31,7 +31,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <scope>provided</scope>
+            <version>8.0.12</version>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
