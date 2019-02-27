@@ -1,9 +1,7 @@
 package finalproject.javaee.controller;
 
-import finalproject.javaee.dto.ViewUserProfileDTO;
 import finalproject.javaee.model.dao.PostDAO;
 import finalproject.javaee.model.pojo.Post;
-import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -81,13 +79,13 @@ public class PostController {
     }
 
 
-    @GetMapping(value = "/users/{user}")
-    public ViewUserProfileDTO getAllPostsByUser(@PathVariable("user") long user_id) throws SQLException{
-        List<Post> posts = dao.getPostsByUser(user_id);
-        User u = userController.getUserById(user_id);
-        //TODO access getter for user (VIJ TUUK)!!!
-        //return new ViewUserProfileDTO(, photo, posts);
-    }
+//    @GetMapping(value = "/users/{user}")
+//    public ViewUserProfileDTO getAllPostsByUser(@PathVariable("user") long user_id) throws SQLException{
+//        List<Post> posts = dao.getPostsByUser(user_id);
+//        User u = userController.getUserById(user_id);
+//        //TODO access getter for user (VIJ TUUK)!!!
+//        //return new ViewUserProfileDTO(, photo, posts);
+//    }
 
     @GetMapping(value = "/newsfeed")
     public List<Post> getAll(HttpSession session){

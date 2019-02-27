@@ -23,17 +23,17 @@ public abstract class BaseController {
 
     @ExceptionHandler({NotLoggedException.class})
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
-    public ErrorMessage handleNotLogged(Exception e){
+    public ErrorMessage handleNotLogged(NotLoggedException e){
         ErrorMessage message = new ErrorMessage(e.getMessage(), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
         return message;
     }
 
-    @ExceptionHandler({WrongDataExseption.class})
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ErrorMessage handleDataErrors(Exception e){
-        ErrorMessage message = new ErrorMessage(e.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
-        return message;
-    }
+//    @ExceptionHandler({WrongDataExseption.class})
+//    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+//    public ErrorMessage handleDataErrors(Exception e){
+//        ErrorMessage message = new ErrorMessage(e.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+//        return message;
+//    }
 
     @ExceptionHandler({BaseException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
