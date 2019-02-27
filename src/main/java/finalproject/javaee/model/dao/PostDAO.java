@@ -47,7 +47,7 @@ public class PostDAO extends BaseDAO{
         Statement statement = getConnection().createStatement();
         ResultSet rs = statement.executeQuery("SELECT p.id, p.description FROM posts p JOIN users u ON p.user_id = u.id" );
         while(rs.next()){
-            postsByUser.add(new Post(rs.getInt(1), rs.getString(2));
+            postsByUser.add(new Post(rs.getInt(1), rs.getString(2)));
         }
         return postsByUser;
     }

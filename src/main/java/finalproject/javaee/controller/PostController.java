@@ -32,12 +32,17 @@ public class PostController {
     private JdbcTemplate jdbcTemplate;
 
     @GetMapping(value = "/posts/users/{userId}")
-    public List<Post> getPostsByUserId(@PathVariable("userId") long id, HttpSession session){
+    public List<Post> getPostsByUserId(@PathVariable("userId") long id, HttpSession session) {
         //validateLogin(session);
         // jdbcTemplate.query("SELECT description, location_id, categories_id, date FROM posts as p WHERE p.id = id", (resultSet, i) -> toPost(resultSet));
-        List<Post> posts =  postRepository.findAllById(id);
+        List<Post> posts = postRepository.findAllById(id);
         return posts;
+    }
 
+    @GetMapping(value = "/posts/userId")
+    public List<Post> getPostsByUserId(long id){
+        List<Post> posts = jdbcTemplate.query("SELECT description, location_id, categories_id, date FROM posts as p WHERE p.id = id", (resultSet, i) -> toPost(resultSet));
+        return posts;
     }
 
     @GetMapping(value = "/posts/{id}")
@@ -80,7 +85,7 @@ public class PostController {
     public ViewUserProfileDTO getAllPostsByUser(@PathVariable("user") long user_id) throws SQLException{
         List<Post> posts = dao.getPostsByUser(user_id);
         User u = userController.getUserById(user_id);
-        //TODO access getter for user
+        //TODO access getter for user (VIJ TUUK)!!!
         //return new ViewUserProfileDTO(, photo, posts);
     }
 
