@@ -1,16 +1,17 @@
 package finalproject.javaee.controller;
 
+import finalproject.javaee.dto.userDTO.UserLoginDTO;
+import finalproject.javaee.dto.userDTO.UserRegistrationDTO;
 import finalproject.javaee.model.dao.UserDao;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceprions.BaseException;
 import finalproject.javaee.model.util.exceprions.InvalidLoginException;
 import finalproject.javaee.model.util.exceprions.UserLoggedInException;
+import finalproject.javaee.model.util.exceprions.UserLoggedOutException;
 import finalproject.javaee.model.util.exceprions.usersRegistrationExcepions.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
@@ -27,8 +28,9 @@ public class UserController extends BaseController {
     private UserDao userDao;
 
     @PostMapping(value = "/register")
-    public User userRegistration(@RequestBody User user, HttpServletResponse response) throws RegistrationException, IOException {
+    public User userRegistration(@RequestBody User user) throws RegistrationException,IOException{
         //TODO DTO
+//        User user = registration.user;
         validateUsername(user.getUsername());
         validatePassword(user.getPassword(), user.getVerifyPassword());
         validateFirstName(user.getFirstName());
@@ -36,13 +38,11 @@ public class UserController extends BaseController {
         validateEmail(user.getEmail());
         validateGender(user.getGender());
         userRepository.save(user);
-//        response.sendRedirect("/login");
         return user;
     }
 
     @PostMapping(value = "/login")
-    public User login(@RequestBody User user, HttpSession session) throws BaseException {
-        //TODO DTO
+    public UserLoginDTO userLogin(@RequestBody UserLoginDTO user, HttpSession session) throws BaseException {
         if(!isLoggedIn(session)){
             validateUsernameAndPassword(user.getUsername(), user.getPassword());
             session.setAttribute("User",user);
@@ -53,10 +53,63 @@ public class UserController extends BaseController {
         }
     }
 
+    @PostMapping(value = "/logout")
+    public void userLogout(HttpSession session) throws UserLoggedOutException{
+        //TODO DTO
+        if(!isLoggedIn(session)){
+            throw new UserLoggedOutException();
+        }
+        session.invalidate();
+    }
+
+    /* ************* Follow and Unfollow ************* */
+
+    @GetMapping(value = "/follow/{id}")
+    public void userFollow(){
+
+    }
+
+    @GetMapping(value = "/unfollow/{id}")
+    public void userUnfollow(){
+
+    }
+
+    /* ************* Edit profile ************* */
+
+    @GetMapping(value = "/profile")
+    public void viewProfile(){
+
+    }
+    @GetMapping(value = "/profile/edit")
+    public void editProfile(){
+
+    }
+    @PutMapping(value = "/profile/edit/password")
+    public void editPassword(){
+
+    }
+    @PutMapping(value = "/profile/edit/email")
+    public void editEmail(){
+
+    }
+    @PutMapping(value = "profile/edit/firstName")
+    public void editFirstName(){
+
+    }
+    @PutMapping(value = "/profile/edit/lastName")
+    public void editLastName(){
+
+    }
+
+    @DeleteMapping(value = "/profile/edit/delete")
+    public void deleteProfile(){
+        
+    }
+
     /* ************* Validations ************* */
 
     public static boolean isLoggedIn(HttpSession session){
-        return !(session.isNew() || session.getAttribute("Username") == null);
+        return (!session.isNew() && session.getAttribute("Username") != null);
     }
 
     private void validateUsername(String username)throws RegistrationException {
@@ -113,7 +166,7 @@ public class UserController extends BaseController {
     }
 
     private void validateUsernameAndPassword(String username, String password) throws InvalidLoginException {
-        if(username.isEmpty() || password.isEmpty()){
+        if((username == null || password == null)||(username.isEmpty() || password.isEmpty())){
             throw new InvalidLoginException();
         }
         else{
@@ -122,9 +175,6 @@ public class UserController extends BaseController {
                 throw new InvalidLoginException();
             }
         }
-    }
-    public User getUserById(long id){
-        return getUserById(id);
     }
 
 }

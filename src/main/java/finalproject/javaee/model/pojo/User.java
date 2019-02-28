@@ -29,18 +29,8 @@ public class User {
         private String firstName;
         private String lastName;
         private String email;
+
+        //TODO photo
         private String photo;
         private String gender;
-
-        public User(long id, String username, String password, String verifyPassword, String firstName, String lastName, String email, String gender) {
-            this.id = id;
-            this.username = username;
-            this.password = password;
-            this.verifyPassword = verifyPassword;
-            this.firstName = firstName;
-            this.lastName = lastName;
-            this.email = email;
-            this.gender = gender;
-        }
-
 }
