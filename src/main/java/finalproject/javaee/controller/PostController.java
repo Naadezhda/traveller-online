@@ -1,7 +1,7 @@
 package finalproject.javaee.controller;
-
 import finalproject.javaee.model.dao.PostDAO;
 import finalproject.javaee.model.pojo.Post;
+import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.PostRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

@@ -1,11 +1,10 @@
 package finalproject.javaee.controller;
 
 import finalproject.javaee.model.pojo.ErrorMessage;
-import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceprions.BaseException;
 import finalproject.javaee.model.util.exceprions.NotLoggedException;
-import finalproject.javaee.model.util.exceprions.WrongDataExseption;
+import finalproject.javaee.model.util.exceprions.usersRegistrationExcepions.RegistrationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,12 +27,12 @@ public abstract class BaseController {
         return message;
     }
 
-//    @ExceptionHandler({WrongDataExseption.class})
-//    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-//    public ErrorMessage handleDataErrors(Exception e){
-//        ErrorMessage message = new ErrorMessage(e.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
-//        return message;
-//    }
+    @ExceptionHandler({RegistrationException.class})
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
+    public ErrorMessage handleRegistrationErrors(Exception e){
+        ErrorMessage message = new ErrorMessage(e.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
+        return message;
+    }
 
     @ExceptionHandler({BaseException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
