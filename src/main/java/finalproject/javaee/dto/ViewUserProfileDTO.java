@@ -1,17 +1,20 @@
 package finalproject.javaee.dto;
 
-import finalproject.javaee.model.pojo.Post;
+import lombok.Getter;
 
 import java.util.List;
 
+@Getter
 public class ViewUserProfileDTO {
 
     private String username;
     private String photo;
-    private List<Post> posts;
+    private List<PostWithMediaDTO> posts;
 
-    /*public String getUserProfile(String username, String photo, List<Post> posts){
-
-    }*/
+    public ViewUserProfileDTO(String username, String photo, List<PostWithMediaDTO> posts){
+        this.username = username;
+        this.photo = photo;
+        this.posts = posts;
+    }
 
 }

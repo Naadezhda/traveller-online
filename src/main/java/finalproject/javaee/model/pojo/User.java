@@ -1,5 +1,6 @@
 package finalproject.javaee.model.pojo;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

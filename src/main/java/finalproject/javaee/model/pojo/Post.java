@@ -1,4 +1,5 @@
 package finalproject.javaee.model.pojo;
+import com.fasterxml.jackson.annotation.JsonRootName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,7 +12,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
-@Table(name = "post")
+@Table(name = "posts")
 public class Post {
 
     @Id
@@ -19,6 +20,8 @@ public class Post {
     private long id;
     private String description;
     private LocalDateTime date;
+    private int categoriesId;
+    private long userId;
 
     public Post(String description) {
         this.description = description;

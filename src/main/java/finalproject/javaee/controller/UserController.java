@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
 
@@ -175,6 +174,10 @@ public class UserController extends BaseController {
                 throw new InvalidLoginException();
             }
         }
+    }
+
+    public User getUserById(long id){
+        return getUserById(id);
     }
 
 }

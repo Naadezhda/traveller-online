@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    List<Post> findAllById(long id);
+    List<Post> findAllByCategoriesId(long id);
+    List<Post> findAllByUserId(long id);
 }

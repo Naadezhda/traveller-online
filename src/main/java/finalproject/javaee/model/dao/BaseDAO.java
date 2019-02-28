@@ -3,7 +3,6 @@ package finalproject.javaee.model.dao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
 
 import java.sql.Connection;
 import java.sql.SQLException;
