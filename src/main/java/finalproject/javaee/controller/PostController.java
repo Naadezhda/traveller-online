@@ -1,5 +1,6 @@
 package finalproject.javaee.controller;
 
+import finalproject.javaee.dto.MediaInBytesDTO;
 import finalproject.javaee.dto.PostWithMediaDTO;
 import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.model.dao.PostDAO;
@@ -17,6 +18,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -68,7 +72,7 @@ public class PostController extends BaseController {
     MediaRepository mediaRepository;
 
     @GetMapping(value = "/profile/users/{user}")
-    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws NotLoggedException{
+    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws NotLoggedException, IOException{
         if(UserController.isLoggedIn(session)) {
             List<Post> posts = dao.getPostsByUser(user_id);
             User u = ur.findById(user_id);
@@ -77,11 +81,20 @@ public class PostController extends BaseController {
             List<PostWithMediaDTO> postWithMedia = new ArrayList<>();
             for (Post p : posts) {
                 List<Media> postMedia = mediaRepository.findAllByPostId(p.getId());
-                postWithMedia.add(new PostWithMediaDTO(p, postMedia));
+                List<MediaInBytesDTO> postMediaBytes = new ArrayList<>();
+                for (Media m : postMedia) {
+                    postMediaBytes.add(new MediaInBytesDTO(downloadImage(m.getMediaUrl())));
+                }
+                postWithMedia.add(new PostWithMediaDTO(p, postMediaBytes));
             }
             return new ViewUserProfileDTO(username, photo, postWithMedia);
         }
         throw new NotLoggedException();
+    }
+
+    public byte[] downloadImage(String mediaName) throws IOException {
+        File file = new File(mediaName);
+        return Files.readAllBytes(file.toPath());
     }
 
     @GetMapping(value = "/newsfeed")

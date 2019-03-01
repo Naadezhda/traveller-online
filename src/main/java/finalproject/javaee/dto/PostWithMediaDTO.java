@@ -10,9 +10,9 @@ import java.util.List;
 public class PostWithMediaDTO {
 
     Post post;
-    List<Media> media;
+    List<MediaInBytesDTO> media;
 
-    public PostWithMediaDTO(Post post, List<Media> media){
+    public PostWithMediaDTO(Post post, List<MediaInBytesDTO> media){
         this.post = post;
         this.media = media;
     }
