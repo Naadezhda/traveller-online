@@ -1,6 +1,7 @@
 package finalproject.javaee.model.pojo;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
+import finalproject.javaee.dto.userDTO.UserLoginDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
+import java.util.List;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,4 +36,14 @@ public class User {
         //TODO photo
         private String photo;
         private String gender;
+
+        @ManyToMany(cascade = {CascadeType.ALL})
+        @JoinTable(name = "relations",
+                   joinColumns = @JoinColumn(name = "follower_id"),
+                   inverseJoinColumns = @JoinColumn(name = "following_id"))
+        private List<User> following;
+
+        @ManyToMany(mappedBy = "following")
+        private List<User> follower;
+
 }

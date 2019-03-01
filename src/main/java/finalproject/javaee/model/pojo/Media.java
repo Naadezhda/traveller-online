@@ -18,7 +18,7 @@ public class Media {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     long id;
-    String mediaUrl;//TODO rename to imageUrl
+//    String mediaUrl;//TODO rename to imageUrl
     long postId;
 
 

@@ -1,14 +1,11 @@
 package finalproject.javaee.controller;
 
+import finalproject.javaee.dto.ViewUserProfileDTO;
 import finalproject.javaee.dto.userDTO.UserLoginDTO;
-import finalproject.javaee.dto.userDTO.UserRegistrationDTO;
 import finalproject.javaee.model.dao.UserDao;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.exceprions.BaseException;
-import finalproject.javaee.model.util.exceprions.InvalidLoginException;
-import finalproject.javaee.model.util.exceprions.UserLoggedInException;
-import finalproject.javaee.model.util.exceprions.UserLoggedOutException;
+import finalproject.javaee.model.util.exceprions.*;
 import finalproject.javaee.model.util.exceprions.usersRegistrationExcepions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +24,10 @@ public class UserController extends BaseController {
     private UserDao userDao;
 
     @PostMapping(value = "/register")
-    public User userRegistration(@RequestBody User user) throws RegistrationException,IOException{
+    public User userRegistration(@RequestBody User user) throws RegistrationException, IOException {
         //TODO DTO
-//        User user = registration.user;
         validateUsername(user.getUsername());
-        validatePassword(user.getPassword(), user.getVerifyPassword());
+        validatePassword(user.getPassword().trim(), user.getVerifyPassword().trim());
         validateFirstName(user.getFirstName());
         validateLastName(user.getLastName());
         validateEmail(user.getEmail());
@@ -41,21 +37,22 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "/login")
-    public UserLoginDTO userLogin(@RequestBody UserLoginDTO user, HttpSession session) throws BaseException {
-        if(!isLoggedIn(session)){
-            validateUsernameAndPassword(user.getUsername(), user.getPassword());
-            session.setAttribute("User",user);
+    public UserLoginDTO userLogin(@RequestBody UserLoginDTO userLoginDTO, HttpSession session) throws BaseException {
+        User user = userRepository.findByUsername(userLoginDTO.getUsername());
+        if (!isLoggedIn(session)) {
+            validateUsernameAndPassword(userLoginDTO.getUsername(), userLoginDTO.getPassword().trim());
+            session.setAttribute("User", user);
             session.setAttribute("Username", user.getUsername());
-            return user;
-        }else{
+            return new UserLoginDTO(user.getUsername(), user.getPassword());
+        } else {
             throw new UserLoggedInException();
         }
     }
 
     @PostMapping(value = "/logout")
-    public void userLogout(HttpSession session) throws UserLoggedOutException{
+    public void userLogout(HttpSession session) throws UserLoggedOutException {
         //TODO DTO
-        if(!isLoggedIn(session)){
+        if (!isLoggedIn(session)) {
             throw new UserLoggedOutException();
         }
         session.invalidate();
@@ -64,21 +61,63 @@ public class UserController extends BaseController {
     /* ************* Follow and Unfollow ************* */
 
     @GetMapping(value = "/follow/{id}")
-    public void userFollow(){
-
+    public void userFollow(@PathVariable("id") long id, HttpSession session) throws NotLoggedException, BaseException {
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        User followingUser = userRepository.findById(id);
+        if (isLoggedIn(session)) {
+            if (userRepository.existsById(id)) {
+                if (!user.getFollowing().contains(followingUser)) {
+                    followingUser.getFollower().add(user);
+                    user.getFollowing().add(followingUser);
+                    userRepository.save(user);
+                } else {
+                    //TODO Exception for already followed
+                    throw new BaseException("ALREADY FOLLOWED");
+                }
+            } else {
+                //TODO Exception for does not exist
+                throw new BaseException("User does not exist");
+            }
+        } else {
+            throw new NotLoggedException();
+        }
     }
 
-    @GetMapping(value = "/unfollow/{id}")
-    public void userUnfollow(){
-
+    @DeleteMapping(value = "/unfollow/{id}")
+    public void userUnfollow(@PathVariable("id") long id, HttpSession session) throws NotLoggedException,BaseException {
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        User unfollowingUser = userRepository.findById(id);
+        if (isLoggedIn(session)) {
+            if (userRepository.existsById(id)) {
+                if (user.getFollowing().contains(unfollowingUser)) {
+                    unfollowingUser.getFollower().remove(user);
+                    user.getFollowing().remove(unfollowingUser);
+                    userRepository.save(user);
+                } else {
+                    //TODO Exception for not followed
+                    throw new BaseException("You are not followed");
+                }
+            } else {
+                //TODO Exception for does not exist
+                throw new BaseException("User does not exist");
+            }
+        } else {
+            throw new NotLoggedException();
+        }
     }
+    //TODO make view list of followers and following
 
     /* ************* Edit profile ************* */
 
     @GetMapping(value = "/profile")
-    public void viewProfile(){
-
+    public ViewUserProfileDTO viewProfile(HttpSession session) throws BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        if(isLoggedIn(session)) {
+            return new ViewUserProfileDTO(user.getUsername(), user.getPhoto());
+        }
+        throw new NotLoggedException();
     }
+
     @GetMapping(value = "/profile/edit")
     public void editProfile(){
 
@@ -175,6 +214,15 @@ public class UserController extends BaseController {
             }
         }
     }
+
+    public long getLoggedUserByIdSession(HttpSession session)throws NotLoggedException {
+        User user = ((User)(session.getAttribute("User")));
+        if(isLoggedIn(session) || user != null){
+            return  ((User)(session.getAttribute("User"))).getId();
+        }
+        throw new NotLoggedException();
+    }
+
 
     public User getUserById(long id){
         return getUserById(id);

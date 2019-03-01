@@ -9,6 +9,7 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
+import finalproject.javaee.model.util.exceprions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.BadSqlGrammarException;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-public class PostController {
+public class PostController extends BaseController {
 
     @Autowired
     private PostRepository postRepository;
@@ -78,8 +79,8 @@ public class PostController {
     MediaRepository mediaRepository;
 
     @GetMapping(value = "/profile/users/{user}")
-    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id) {
-        //validateLogin(session);
+    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id,HttpSession session) throws NotLoggedException {
+        validateLogin(session);
         List<Post> posts = dao.getPostsByUser(user_id);
         User u = ur.findById(user_id);
         String username = u.getUsername();
