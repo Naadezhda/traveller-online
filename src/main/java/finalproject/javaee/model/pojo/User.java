@@ -31,7 +31,6 @@ public class User {
     private String firstName;
     private String lastName;
     private String email;
-
     //TODO photo
     private String photo;
     private String gender;

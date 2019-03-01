@@ -1,6 +1,5 @@
 package finalproject.javaee.model.repository;
 
-import finalproject.javaee.dto.userDTO.UserLoginDTO;
 import finalproject.javaee.model.pojo.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 

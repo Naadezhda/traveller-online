@@ -1,11 +1,12 @@
 package finalproject.javaee.controller;
 
-import finalproject.javaee.dto.ViewUserProfileDTO;
+import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.dto.userDTO.UserLoginDTO;
-import finalproject.javaee.model.dao.UserDao;
+import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceprions.*;
+import finalproject.javaee.model.util.exceprions.usersExceptions.*;
 import finalproject.javaee.model.util.exceprions.usersRegistrationExcepions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +22,9 @@ public class UserController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
-    private UserDao userDao;
 
     @PostMapping(value = "/register")
-    public User userRegistration(@RequestBody User user) throws RegistrationException, IOException {
-        //TODO DTO
+    public void userRegistration(@RequestBody User user) throws RegistrationException, IOException {
         validateUsername(user.getUsername());
         validatePassword(user.getPassword().trim(), user.getVerifyPassword().trim());
         validateFirstName(user.getFirstName());
@@ -33,17 +32,15 @@ public class UserController extends BaseController {
         validateEmail(user.getEmail());
         validateGender(user.getGender());
         userRepository.save(user);
-        return user;
     }
 
     @PostMapping(value = "/login")
-    public UserLoginDTO userLogin(@RequestBody UserLoginDTO userLoginDTO, HttpSession session) throws BaseException {
+    public void userLogin(@RequestBody UserLoginDTO userLoginDTO, HttpSession session) throws BaseException {
         User user = userRepository.findByUsername(userLoginDTO.getUsername());
         if (!isLoggedIn(session)) {
             validateUsernameAndPassword(userLoginDTO.getUsername(), userLoginDTO.getPassword().trim());
             session.setAttribute("User", user);
             session.setAttribute("Username", user.getUsername());
-            return new UserLoginDTO(user.getUsername(), user.getPassword());
         } else {
             throw new UserLoggedInException();
         }
@@ -51,7 +48,6 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "/logout")
     public void userLogout(HttpSession session) throws UserLoggedOutException {
-        //TODO DTO
         if (!isLoggedIn(session)) {
             throw new UserLoggedOutException();
         }
@@ -71,12 +67,10 @@ public class UserController extends BaseController {
                     user.getFollowing().add(followingUser);
                     userRepository.save(user);
                 } else {
-                    //TODO Exception for already followed
-                    throw new BaseException("ALREADY FOLLOWED");
+                    throw new FollowedException("Already followed.");
                 }
             } else {
-                //TODO Exception for does not exist
-                throw new BaseException("User does not exist");
+                throw new UserExistException();
             }
         } else {
             throw new NotLoggedException();
@@ -94,12 +88,10 @@ public class UserController extends BaseController {
                     user.getFollowing().remove(unfollowingUser);
                     userRepository.save(user);
                 } else {
-                    //TODO Exception for not followed
-                    throw new BaseException("You are not followed");
+                    throw new FollowedException("User is not followed.");
                 }
             } else {
-                //TODO Exception for does not exist
-                throw new BaseException("User does not exist");
+                throw new UserExistException();
             }
         } else {
             throw new NotLoggedException();
@@ -110,7 +102,7 @@ public class UserController extends BaseController {
     /* ************* Edit profile ************* */
 
     @GetMapping(value = "/profile")
-    public ViewUserProfileDTO viewProfile(HttpSession session) throws BaseException{
+    public ViewUserProfileDTO viewProfile(HttpSession session) throws NotLoggedException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         if(isLoggedIn(session)) {
             return new ViewUserProfileDTO(user.getUsername(), user.getPhoto());
@@ -118,30 +110,82 @@ public class UserController extends BaseController {
         throw new NotLoggedException();
     }
 
-    @GetMapping(value = "/profile/edit")
-    public void editProfile(){
-
-    }
     @PutMapping(value = "/profile/edit/password")
-    public void editPassword(){
-
+    public void editPassword(@RequestBody EditPasswordDTO editPasswordDTO, HttpSession session) throws NotLoggedException,BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        System.out.println(user.getUsername());
+        if(isLoggedIn(session)){
+            if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
+                validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
+                user.setPassword(editPasswordDTO.getNewPassword().trim());
+                userRepository.save(user);
+            }
+            else {
+                throw new WrongPasswordInputException();
+            }
+        }
+        else {
+            throw new NotLoggedException();
+        }
     }
+
     @PutMapping(value = "/profile/edit/email")
-    public void editEmail(){
-
+    public void editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session)throws NotLoggedException,BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        if(isLoggedIn(session)){
+            if(editEmailDTO.getPassword().equals(user.getPassword())){
+                validateEmail(editEmailDTO.getNewEmail());
+                user.setEmail(editEmailDTO.getNewEmail());
+                userRepository.save(user);
+            }
+            else{
+                throw new WrongPasswordInputException();
+            }
+        }
+        else {
+            throw new NotLoggedException();
+        }
     }
+
     @PutMapping(value = "profile/edit/firstName")
-    public void editFirstName(){
-
+    public void editFirstName(@RequestBody EditFirstNameDTO editFirstNameDTO, HttpSession session) throws NotLoggedException,BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        if(isLoggedIn(session)){
+            validateFirstName(editFirstNameDTO.getNewFirstName());
+            user.setFirstName(editFirstNameDTO.getNewFirstName());
+            userRepository.save(user);
+        }else {
+            throw new NotLoggedException();
+        }
     }
-    @PutMapping(value = "/profile/edit/lastName")
-    public void editLastName(){
 
+    @PutMapping(value = "/profile/edit/lastName")
+    public void editLastName(@RequestBody EditLastNameDTO editLastNameDTO, HttpSession session) throws NotLoggedException,BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        if(isLoggedIn(session)){
+            validateLastName(editLastNameDTO.getNewLastName());
+            user.setLastName(editLastNameDTO.getNewLastName());
+            userRepository.save(user);
+        }else {
+            throw new NotLoggedException();
+        }
     }
 
     @DeleteMapping(value = "/profile/edit/delete")
-    public void deleteProfile(){
-        
+    public void deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws NotLoggedException,BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        if(isLoggedIn(session)){
+            if(deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())){
+                userLogout(session);
+                userRepository.delete(user);
+            }
+            else{
+                throw new WrongPasswordInputException();
+            }
+        }
+        else {
+            throw new NotLoggedException();
+        }
     }
 
     /* ************* Validations ************* */

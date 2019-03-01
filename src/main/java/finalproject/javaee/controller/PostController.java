@@ -1,7 +1,7 @@
 package finalproject.javaee.controller;
 
 import finalproject.javaee.dto.PostWithMediaDTO;
-import finalproject.javaee.dto.ViewUserProfileDTO;
+import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.model.dao.PostDAO;
 import finalproject.javaee.model.pojo.Media;
 import finalproject.javaee.model.pojo.Post;
@@ -11,7 +11,7 @@ import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceprions.BaseException;
 import finalproject.javaee.model.util.exceprions.InvalidPostException;
-import finalproject.javaee.model.util.exceprions.NotLoggedException;
+import finalproject.javaee.model.util.exceprions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
@@ -69,17 +69,19 @@ public class PostController extends BaseController {
 
     @GetMapping(value = "/profile/users/{user}")
     public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws NotLoggedException{
-        validateLogin(session);
-        List<Post> posts = dao.getPostsByUser(user_id);
-        User u = ur.findById(user_id);
-        String username = u.getUsername();
-        String photo = u.getPhoto();
-        List<PostWithMediaDTO> postWithMedia = new ArrayList<>();
-        for(Post p : posts){
-            List<Media> postMedia = mediaRepository.findAllByPostId(p.getId());
-            postWithMedia.add(new PostWithMediaDTO(p, postMedia));
+        if(UserController.isLoggedIn(session)) {
+            List<Post> posts = dao.getPostsByUser(user_id);
+            User u = ur.findById(user_id);
+            String username = u.getUsername();
+            String photo = u.getPhoto();
+            List<PostWithMediaDTO> postWithMedia = new ArrayList<>();
+            for (Post p : posts) {
+                List<Media> postMedia = mediaRepository.findAllByPostId(p.getId());
+                postWithMedia.add(new PostWithMediaDTO(p, postMedia));
+            }
+            return new ViewUserProfileDTO(username, photo, postWithMedia);
         }
-        return new ViewUserProfileDTO(username, photo, postWithMedia);
+        throw new NotLoggedException();
     }
 
     @GetMapping(value = "/newsfeed")

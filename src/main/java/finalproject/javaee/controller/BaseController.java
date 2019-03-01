@@ -3,7 +3,7 @@ package finalproject.javaee.controller;
 import finalproject.javaee.model.pojo.ErrorMessage;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceprions.BaseException;
-import finalproject.javaee.model.util.exceprions.NotLoggedException;
+import finalproject.javaee.model.util.exceprions.usersExceptions.NotLoggedException;
 import finalproject.javaee.model.util.exceprions.usersRegistrationExcepions.RegistrationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

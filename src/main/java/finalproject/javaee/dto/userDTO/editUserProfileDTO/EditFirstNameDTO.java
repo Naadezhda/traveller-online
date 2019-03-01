@@ -1,6 +1,5 @@
-package finalproject.javaee.dto.userDTO;
+package finalproject.javaee.dto.userDTO.editUserProfileDTO;
 
-import finalproject.javaee.model.pojo.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,8 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Getter
 @Setter
-public class UserLoginDTO {
+public class EditFirstNameDTO {
 
-    private String username;
-    private String password;
+    private String newFirstName;
 }

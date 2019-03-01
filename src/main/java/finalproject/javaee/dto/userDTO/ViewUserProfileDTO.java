@@ -1,6 +1,6 @@
-package finalproject.javaee.dto;
+package finalproject.javaee.dto.userDTO;
 
-import finalproject.javaee.dto.userDTO.UserLoginDTO;
+import finalproject.javaee.dto.PostWithMediaDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
