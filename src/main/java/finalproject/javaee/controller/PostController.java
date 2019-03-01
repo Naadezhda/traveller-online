@@ -9,10 +9,10 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
+import finalproject.javaee.model.util.exceprions.BaseException;
+import finalproject.javaee.model.util.exceprions.InvalidPostException;
 import finalproject.javaee.model.util.exceprions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.jdbc.BadSqlGrammarException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,39 +37,28 @@ public class PostController extends BaseController {
     private JdbcTemplate jdbcTemplate;
 
     @GetMapping(value = "/posts/users/{userId}")
-    public List<Post> getPostsByUserId(@PathVariable("userId") long id, HttpSession session) {
-        //validateLogin(session);
+    public List<Post> getPostsByUserId(@PathVariable("userId") long id, HttpSession session) throws NotLoggedException {
+        validateLogin(session);
         List<Post> posts = dao.getPostsByUser(id);
         return posts;
     }
 
     @GetMapping(value = "/posts/{id}")
-    public Post getPostByPostId(@PathVariable("id") long id) throws Exception { //TODO own exception(Base Exception)
-        //validateLogin(session);
+    public Post getPostByPostId(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        validateLogin(session);
         Optional<Post> post = postRepository.findById(id);
         if(post.isPresent()){
             return post.get();
         }
         else{
-            throw new Exception("There is no product with such id");
+            throw new InvalidPostException();
         }
     }
 
     @GetMapping(value = "/newsfeed/categories/{category}")
-    public List<Post> getPostsByCategory(@PathVariable("category") int category_id) {
-        //validateLogin(session);
+    public List<Post> getPostsByCategory(@PathVariable("category") int category_id, HttpSession session) throws NotLoggedException{
+        validateLogin(session);
         return dao.getPostsByCategory(category_id);
-    }
-
-    @ExceptionHandler({BadSqlGrammarException.class})
-    @ResponseStatus(value = HttpStatus.I_AM_A_TEAPOT)
-    public String handleSQLError(){
-        return "Sorry bace, sql-a padna. Ne e v nas problema.";
-    }
-
-    @ExceptionHandler({Exception.class})
-    public String handleStupidError(Exception e){
-        return "Sorry bace, she se uvolnqvame s programista. " + e.getClass().getName();
     }
 
     @Autowired
@@ -79,7 +68,7 @@ public class PostController extends BaseController {
     MediaRepository mediaRepository;
 
     @GetMapping(value = "/profile/users/{user}")
-    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id,HttpSession session) throws NotLoggedException {
+    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws NotLoggedException{
         validateLogin(session);
         List<Post> posts = dao.getPostsByUser(user_id);
         User u = ur.findById(user_id);
@@ -94,8 +83,8 @@ public class PostController extends BaseController {
     }
 
     @GetMapping(value = "/newsfeed")
-    public List<Post> getAll(HttpSession session){
-        //validateLogin(session);
+    public List<Post> getAll(HttpSession session) throws NotLoggedException{
+        validateLogin(session);
         return postRepository.findAll();
     }
 

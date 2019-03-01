@@ -1,7 +1,6 @@
 package finalproject.javaee.controller;
 
 import finalproject.javaee.model.pojo.ErrorMessage;
-import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceprions.BaseException;
 import finalproject.javaee.model.util.exceprions.NotLoggedException;

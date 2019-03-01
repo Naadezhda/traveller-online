@@ -146,10 +146,6 @@ public class UserController extends BaseController {
 
     /* ************* Validations ************* */
 
-    public static boolean isLoggedIn(HttpSession session){
-        return (!session.isNew() && session.getAttribute("Username") != null);
-    }
-
     private void validateUsername(String username)throws RegistrationException {
         if(username == null || username.isEmpty()){
             throw new InvalidUsernameException();
@@ -226,6 +222,10 @@ public class UserController extends BaseController {
 
     public User getUserById(long id){
         return getUserById(id);
+    }
+
+    public static boolean isLoggedIn(HttpSession session){
+        return (!session.isNew() && session.getAttribute("Username") != null);
     }
 
 }
