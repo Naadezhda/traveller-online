@@ -5,6 +5,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @NoArgsConstructor
 @Getter
@@ -22,11 +23,15 @@ public class Post {
     private long categoriesId;
     private LocalDateTime date;
 
+    @ManyToMany(fetch = FetchType.EAGER,
+            mappedBy = "likedPosts")
+    private List<User> usersWhoLiked;
 
     public Post(String description) {
         this.description = description;
         this.date = LocalDateTime.now();
     }
+
 
     public Post(long userId, String description, long locationId,long categoriesId) {
         this(description);
