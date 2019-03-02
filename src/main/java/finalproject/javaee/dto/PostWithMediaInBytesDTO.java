@@ -8,12 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
-public class PostWithMediaDTO {
+public class PostWithMediaInBytesDTO {
 
     Post post;
     List<MediaInBytesDTO> media;
 
-    public PostWithMediaDTO(Post post, List<MediaInBytesDTO> media){
+    public PostWithMediaInBytesDTO(Post post, List<MediaInBytesDTO> media){
         this.post = post;
         this.media = media;
 

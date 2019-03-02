@@ -1,6 +1,6 @@
-package finalproject.javaee.dto.userDTO;
+package finalproject.javaee.dto;
 
-import finalproject.javaee.dto.PostWithMediaInBytesDTO;
+import finalproject.javaee.dto.PostWithMediaURL;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

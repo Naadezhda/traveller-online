@@ -1,6 +1,6 @@
 package finalproject.javaee.dto.userDTO;
 
-import finalproject.javaee.dto.PostWithMediaDTO;
+import finalproject.javaee.dto.PostWithMediaInBytesDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,7 +15,7 @@ public class ViewUserProfileDTO{
 
     private String username;
     private String photo;
-    private List<PostWithMediaDTO> posts;
+    private List<PostWithMediaInBytesDTO> posts;
 
     public ViewUserProfileDTO(String username, String photo){
         this.username = username;
@@ -23,7 +23,7 @@ public class ViewUserProfileDTO{
         this.posts = new ArrayList<>();
     }
 
-    public ViewUserProfileDTO(String username, String photo, List<PostWithMediaDTO> posts) {
+    public ViewUserProfileDTO(String username, String photo, List<PostWithMediaInBytesDTO> posts) {
         this.username = username;
         this.photo = photo;
         this.posts = posts;
