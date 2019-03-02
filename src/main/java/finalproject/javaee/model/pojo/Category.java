@@ -1,4 +1,7 @@
 package finalproject.javaee.model.pojo;
 
-public class Category {
+public enum Category {
+
+    MOUNTAIN, BEACH, CAVE, TOWN
+    
 }

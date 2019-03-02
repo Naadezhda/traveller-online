@@ -1,6 +1,7 @@
 package finalproject.javaee.model.pojo;
 
 
+import finalproject.javaee.model.util.CryptWithMD5;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,7 @@ public class User {
     private String photo;
     private String gender;
 
+
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(name = "relations",
             joinColumns = @JoinColumn(name = "follower_id"),
@@ -43,5 +45,21 @@ public class User {
 
     @ManyToMany(mappedBy = "following")
     private List<User> follower;
+
+    public String getPassword() {
+        return CryptWithMD5.crypt(password).trim();
+    }
+
+    public String getVerifyPassword() {
+        return CryptWithMD5.crypt(verifyPassword).trim();
+    }
+
+    public void setPassword(String password) {
+        this.password = CryptWithMD5.crypt(password).trim();
+    }
+
+    public void setVerifyPassword(String verifyPassword) {
+        this.verifyPassword = CryptWithMD5.crypt(verifyPassword).trim();
+    }
 }
 

@@ -24,21 +24,24 @@ public class UserController extends BaseController {
     private UserRepository userRepository;
 
     @PostMapping(value = "/register")
-    public void userRegistration(@RequestBody User user) throws RegistrationException, IOException {
+    public User userRegistration(@RequestBody User user) throws RegistrationException, IOException {
         validateUsername(user.getUsername());
-        validatePassword(user.getPassword().trim(), user.getVerifyPassword().trim());
+        validatePassword(user.getPassword(),user.getVerifyPassword());
+        System.out.println(user.getPassword());
         validateFirstName(user.getFirstName());
         validateLastName(user.getLastName());
         validateEmail(user.getEmail());
         validateGender(user.getGender());
         userRepository.save(user);
+        return user;
     }
 
     @PostMapping(value = "/login")
     public void userLogin(@RequestBody UserLoginDTO userLoginDTO, HttpSession session) throws BaseException {
         User user = userRepository.findByUsername(userLoginDTO.getUsername());
         if (!isLoggedIn(session)) {
-            validateUsernameAndPassword(userLoginDTO.getUsername(), userLoginDTO.getPassword().trim());
+            System.out.println(userLoginDTO.getPassword());
+            validateUsernameAndPassword(userLoginDTO.getUsername(), userLoginDTO.getPassword());
             session.setAttribute("User", user);
             session.setAttribute("Username", user.getUsername());
         } else {
@@ -117,7 +120,7 @@ public class UserController extends BaseController {
         if(isLoggedIn(session)){
             if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
                 validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
-                user.setPassword(editPasswordDTO.getNewPassword().trim());
+                user.setPassword(editPasswordDTO.getNewPassword());
                 userRepository.save(user);
             }
             else {

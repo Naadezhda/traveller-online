@@ -4,6 +4,7 @@ import finalproject.javaee.model.pojo.Media;
 import finalproject.javaee.model.pojo.Post;
 import lombok.Getter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
