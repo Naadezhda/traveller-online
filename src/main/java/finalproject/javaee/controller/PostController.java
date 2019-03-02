@@ -14,7 +14,9 @@ import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceprions.BaseException;
-import finalproject.javaee.model.util.exceprions.InvalidPostException;
+import finalproject.javaee.model.util.exceprions.postsExceptions.InvalidPostException;
+import finalproject.javaee.model.util.exceprions.postsExceptions.LikedPostException;
+import finalproject.javaee.model.util.exceprions.postsExceptions.NotLikedPostException;
 import finalproject.javaee.model.util.exceprions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -51,14 +53,53 @@ public class PostController extends BaseController {
     @GetMapping(value = "/posts/{id}")
     public Post getPostByPostId(@PathVariable("id") long id, HttpSession session) throws BaseException {
         if(UserController.isLoggedIn(session)) {
-            Optional<Post> post = postRepository.findById(id);
-            if (post.isPresent()) {
-                return post.get();
-            } else {
-                throw new InvalidPostException();
-            }
+           return findPostById(id);
         }
         throw new NotLoggedException();
+    }
+
+    @PostMapping(value = "/posts/{id}/like")
+    public void likePost(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        if(UserController.isLoggedIn(session)) {
+            User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+            Post post = findPostById(id);
+            if (!post.getUsersWhoLiked().contains(user)) {
+                post.getUsersWhoLiked().add(user);
+                user.getLikedPosts().add(post);
+                userRepository.save(user);
+            }
+            else{
+                throw new LikedPostException("Already liked this post.");
+            }
+        }
+        else throw new NotLoggedException();
+    }
+
+    @PostMapping(value = "/posts/{id}/dislike")
+    public void dislikePost(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        if(UserController.isLoggedIn(session)) {
+            User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+            Post post = findPostById(id);
+            if (post.getUsersWhoLiked().contains(user)) {
+                post.getUsersWhoLiked().remove(user);
+                user.getLikedPosts().remove(post);
+                postRepository.save(post);
+                userRepository.save(user);
+            }
+            else{
+                throw new NotLikedPostException("Not liked this post.");
+            }
+        }
+        else throw new NotLoggedException();
+    }
+
+    public Post findPostById(long id) throws BaseException {
+        Optional<Post> post = postRepository.findById(id);
+        if (post.isPresent()) {
+            return post.get();
+        } else {
+            throw new InvalidPostException();
+        }
     }
 
     @GetMapping(value = "/newsfeed/categories/{category}")
@@ -118,12 +159,12 @@ public class PostController extends BaseController {
     public void addPost(@RequestBody PostAPostWithMediaDTO dto, HttpSession session) throws NotLoggedException{
         if(UserController.isLoggedIn(session)) {
             User user = ((User) (session.getAttribute("User")));
-            Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getTagId(), dto.getCategoriesId());
+            Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
             postRepository.save(p);
             Media m = new Media(p.getId(), dto.getMediaUrl());
             mediaRepository.save(m);
         }
-        throw new NotLoggedException();
+        else throw new NotLoggedException();
     }
 
     @GetMapping(value = "/newsfeed")

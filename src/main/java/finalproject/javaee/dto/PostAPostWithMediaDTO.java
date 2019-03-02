@@ -13,7 +13,6 @@ public class PostAPostWithMediaDTO {
 
     String description;
     long locationId;
-    long tagId;
     long categoriesId;
     String mediaUrl;
 

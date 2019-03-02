@@ -17,7 +17,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Comparable<User> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,6 +46,13 @@ public class User {
     @ManyToMany(mappedBy = "following")
     private List<User> follower;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "likes_posts",
+            joinColumns = @JoinColumn(name = "user_id" , referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
+    private List<Post> likedPosts;
+
+
     public String getPassword() {
         return CryptWithMD5.crypt(password).trim();
     }
@@ -60,6 +67,11 @@ public class User {
 
     public void setVerifyPassword(String verifyPassword) {
         this.verifyPassword = CryptWithMD5.crypt(verifyPassword).trim();
+    }
+
+    @Override
+    public int compareTo(User o) {
+        return (int)(this.getId() - o.getId());
     }
 }
 

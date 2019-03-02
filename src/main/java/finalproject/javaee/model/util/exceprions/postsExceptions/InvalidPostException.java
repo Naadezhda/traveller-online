@@ -1,4 +1,6 @@
-package finalproject.javaee.model.util.exceprions;
+package finalproject.javaee.model.util.exceprions.postsExceptions;
+
+import finalproject.javaee.model.util.exceprions.BaseException;
 
 public class InvalidPostException extends BaseException {
 
