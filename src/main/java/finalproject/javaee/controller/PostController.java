@@ -118,12 +118,14 @@ public class PostController extends BaseController {
     public void addPost(@RequestBody PostAPostWithMediaDTO dto, HttpSession session) throws NotLoggedException{
         if(UserController.isLoggedIn(session)) {
             User user = ((User) (session.getAttribute("User")));
-            Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getTagId(), dto.getCategoriesId());
+            Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
             postRepository.save(p);
             Media m = new Media(p.getId(), dto.getMediaUrl());
             mediaRepository.save(m);
         }
-        throw new NotLoggedException();
+        else {
+            throw new NotLoggedException();
+        }
     }
 
     @GetMapping(value = "/newsfeed")
@@ -134,6 +136,7 @@ public class PostController extends BaseController {
         }
         throw new NotLoggedException();
     }
+
 
     public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) {
         List<User> users = userRepository.findAllByFollowerId(user.getId());

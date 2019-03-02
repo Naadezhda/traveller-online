@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserDao extends BaseDAO {
 
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 }

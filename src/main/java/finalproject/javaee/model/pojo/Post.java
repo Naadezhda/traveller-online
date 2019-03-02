@@ -19,7 +19,6 @@ public class Post {
     private long userId;
     private String description;
     private long locationId;
-    private long tagId;
     private long categoriesId;
     private LocalDateTime date;
 
@@ -29,12 +28,11 @@ public class Post {
         this.date = LocalDateTime.now();
     }
 
-    public Post(long userId, String description, long locationId, long tagId, long categoriesId) {
+    public Post(long userId, String description, long locationId,long categoriesId) {
         this(description);
         this.userId = userId;
         this.description = description;
         this.locationId = locationId;
-        this.tagId = tagId;
         this.categoriesId = categoriesId;
     }
 
