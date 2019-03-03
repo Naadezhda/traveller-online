@@ -51,6 +51,12 @@ public class User implements Comparable<User> {
             inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
     private List<Post> likedPosts;
 
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "tags",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
+    private List<Post> tagPost;
+
     @Override
     public int compareTo(User o) {
         return (int)(this.getId() - o.getId());

@@ -27,6 +27,10 @@ public class Post {
             mappedBy = "likedPosts")
     private List<User> usersWhoLiked;
 
+    @ManyToMany(fetch = FetchType.EAGER,
+            mappedBy = "tagPost")
+    private List<User> tagUser;
+
     public Post(String description) {
         this.description = description;
         this.date = LocalDateTime.now();

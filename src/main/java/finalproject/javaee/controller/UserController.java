@@ -2,12 +2,7 @@ package finalproject.javaee.controller;
 
 import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
-import finalproject.javaee.dto.userDTO.UploadPostDTO;
-import finalproject.javaee.model.pojo.Media;
-import finalproject.javaee.model.pojo.Post;
 import finalproject.javaee.model.pojo.User;
-import finalproject.javaee.model.repository.MediaRepository;
-import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.CryptWithMD5;
 import finalproject.javaee.model.util.MailUtil;
@@ -93,7 +88,7 @@ public class UserController extends BaseController {
                     user.getFollowing().add(followingUser);
                     userRepository.save(user);
                 } else {
-                    throw new FollowedException("Already followed.");
+                    throw new FollowException("Already followed.");
                 }
             } else {
                 throw new UserExistException();
@@ -114,7 +109,7 @@ public class UserController extends BaseController {
                     user.getFollowing().remove(unfollowingUser);
                     userRepository.save(user);
                 } else {
-                    throw new FollowedException("User is not followed.");
+                    throw new FollowException("User is not followed.");
                 }
             } else {
                 throw new UserExistException();
@@ -238,6 +233,10 @@ public class UserController extends BaseController {
 
     /* ************* Validations ************* */
 
+    public static boolean isLoggedIn(HttpSession session){
+        return (!session.isNew() && session.getAttribute("Username") != null);
+    }
+
     private void validateUsername(String username)throws RegistrationException {
         if(username == null || username.isEmpty()){
             throw new InvalidUsernameException();
@@ -303,7 +302,7 @@ public class UserController extends BaseController {
         }
     }
 
-    public long getLoggedUserByIdSession(HttpSession session)throws NotLoggedException {
+    protected long getLoggedUserByIdSession(HttpSession session)throws NotLoggedException {
         User user = ((User)(session.getAttribute("User")));
         if(isLoggedIn(session) || user != null){
             return  ((User)(session.getAttribute("User"))).getId();
@@ -311,13 +310,14 @@ public class UserController extends BaseController {
         throw new NotLoggedException();
     }
 
+    protected void validateIfUserExist(long userId)throws UserExistException {
+        if(!userRepository.existsById(userId)) {
+            throw new UserExistException();
+        }
+    }
+
 
     public User getUserById(long id){
         return getUserById(id);
     }
-
-    public static boolean isLoggedIn(HttpSession session){
-        return (!session.isNew() && session.getAttribute("Username") != null);
-    }
-
 }

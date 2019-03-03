@@ -124,14 +124,23 @@ public class PostController extends BaseController {
         else throw new NotLoggedException();
     }
 
+
+
     public Post findPostById(long id) throws BaseException {
-        Optional<Post> post = postRepository.findById(id);
-        if (post.isPresent()) {
-            return post.get();
-        } else {
+//        Optional<Post> post = postRepository.findById(id);
+//        if (post.isPresent()) {
+//            return post.get();
+//        } else {
+//            throw new InvalidPostException();
+//        }
+        //TODO ne raboteshe po gorniq nachin
+        Post post = postRepository.findById(id);
+        if(!postRepository.existsById(id)){
             throw new InvalidPostException();
         }
+        return post;
     }
+
 
     @GetMapping(value = "/newsfeed/categories/{category}")
     public List<PostWithUserAndMediaDTO> getPostsByCategory(@PathVariable("category") int categoryId, HttpSession session) throws NotLoggedException{
@@ -215,6 +224,7 @@ public class PostController extends BaseController {
         }
         throw new NotLoggedException();
     }
+
 
     public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) {
         List<User> users = userRepository.findAllByFollowerId(user.getId());
