@@ -1,16 +1,22 @@
 package finalproject.javaee.controller;
 
-import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.dto.userDTO.UserLoginDTO;
+import finalproject.javaee.dto.userDTO.UserRegisterDTO;
+import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
+import finalproject.javaee.dto.userDTO.LoginDTO;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
+import finalproject.javaee.model.util.MailUtil;
 import finalproject.javaee.model.util.exceprions.*;
 import finalproject.javaee.model.util.exceprions.usersExceptions.*;
+import finalproject.javaee.model.util.exceprions.usersExceptions.InvalidLoginException;
+import finalproject.javaee.model.util.exceprions.usersExceptions.UserLoggedInException;
 import finalproject.javaee.model.util.exceprions.usersRegistrationExcepions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpSession;
@@ -24,29 +30,35 @@ public class UserController extends BaseController {
     private UserRepository userRepository;
 
     @PostMapping(value = "/register")
-    public User userRegistration(@RequestBody User user) throws RegistrationException, IOException {
+    public UserRegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws RegistrationException, IOException, MessagingException {
         validateUsername(user.getUsername());
         validatePassword(user.getPassword(),user.getVerifyPassword());
-        System.out.println(user.getPassword());
         validateFirstName(user.getFirstName());
         validateLastName(user.getLastName());
         validateEmail(user.getEmail());
         validateGender(user.getGender());
         userRepository.save(user);
-        return user;
+        session.setAttribute("User", user);
+        session.setAttribute("Username", user.getUsername());
+        MailUtil mailUtil = new MailUtil();
+        mailUtil.sendMail("nadejdab29@gmail.bg",user.getEmail(),"Confirm registration by email.","BODY");
+        //TODO send code or file list
+        return new UserRegisterDTO(user.getId(),user.getUsername(),user.getFirstName(),
+                user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
 
     @PostMapping(value = "/login")
-    public void userLogin(@RequestBody UserLoginDTO userLoginDTO, HttpSession session) throws BaseException {
-        User user = userRepository.findByUsername(userLoginDTO.getUsername());
+    public UserLoginDTO userLogin(@RequestBody LoginDTO loginDTO, HttpSession session) throws BaseException {
+        User user = userRepository.findByUsername(loginDTO.getUsername());
         if (!isLoggedIn(session)) {
-            System.out.println(userLoginDTO.getPassword());
-            validateUsernameAndPassword(userLoginDTO.getUsername(), userLoginDTO.getPassword());
+            validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
             session.setAttribute("User", user);
             session.setAttribute("Username", user.getUsername());
         } else {
             throw new UserLoggedInException();
         }
+        return new UserLoginDTO(user.getId(),user.getUsername(),user.getFirstName(),
+                user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
 
     @PostMapping(value = "/logout")

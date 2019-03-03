@@ -32,7 +32,8 @@ public class Post {
         this.date = LocalDateTime.now();
     }
 
-    public Post(long userId, String description, long locationId, long categoriesId) {
+
+    public Post(long userId, String description, long locationId,long categoriesId) {
         this(description);
         this.userId = userId;
         this.description = description;

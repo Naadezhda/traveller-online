@@ -194,7 +194,9 @@ public class PostController extends BaseController {
             Media m = new Media(p.getId(), dto.getMediaUrl());
             mediaRepository.save(m);
         }
-        else throw new NotLoggedException();
+        else {
+            throw new NotLoggedException();
+        }
     }
 
     @GetMapping(value = "/newsfeed")
@@ -205,6 +207,7 @@ public class PostController extends BaseController {
         }
         throw new NotLoggedException();
     }
+
 
     public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) {
         List<User> users = userRepository.findAllByFollowerId(user.getId());
