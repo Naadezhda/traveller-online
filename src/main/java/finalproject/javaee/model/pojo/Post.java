@@ -32,13 +32,18 @@ public class Post {
         this.date = LocalDateTime.now();
     }
 
-
     public Post(long userId, String description, long locationId,long categoriesId) {
         this(description);
         this.userId = userId;
         this.description = description;
         this.locationId = locationId;
         this.categoriesId = categoriesId;
+    }
+
+    public Post(String description, long categoriesId, long userId) {
+        this(description);
+        this.categoriesId = categoriesId;
+        this.userId = userId;
     }
 
 

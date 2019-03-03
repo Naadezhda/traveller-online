@@ -1,17 +1,18 @@
 package finalproject.javaee.dto;
 
-import finalproject.javaee.model.pojo.Media;
 import finalproject.javaee.model.pojo.Post;
 import lombok.Getter;
-
-import java.util.ArrayList;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.util.List;
 
 @Getter
-public class PostWithMediaInBytesDTO {
+@Setter
+@NoArgsConstructor
+public class PostWithMediaInBytesDTO{
 
-    Post post;
-    List<MediaInBytesDTO> media;
+    private Post post;
+    private List<MediaInBytesDTO> media;
 
     public PostWithMediaInBytesDTO(Post post, List<MediaInBytesDTO> media){
         this.post = post;

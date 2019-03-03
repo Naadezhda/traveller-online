@@ -18,9 +18,8 @@ public class Media {
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     long id;
+    String mediaUrl;
     long postId;
-    String mediaUrl;//TODO rename to imageUrl
-
 
     public Media(long postId, String mediaUrl){
         this.postId = postId;
@@ -28,4 +27,8 @@ public class Media {
 
     }
 
+    public Media(String mediaUrl, long postId){
+        this.mediaUrl = mediaUrl;
+        this.postId = postId;
+    }
 }

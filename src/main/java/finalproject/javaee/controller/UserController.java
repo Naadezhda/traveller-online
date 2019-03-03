@@ -5,7 +5,12 @@ import finalproject.javaee.dto.userDTO.UserRegisterDTO;
 import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.dto.userDTO.LoginDTO;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
+import finalproject.javaee.dto.userDTO.UploadPostDTO;
+import finalproject.javaee.model.pojo.Media;
+import finalproject.javaee.model.pojo.Post;
 import finalproject.javaee.model.pojo.User;
+import finalproject.javaee.model.repository.MediaRepository;
+import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.MailUtil;
 import finalproject.javaee.model.util.exceprions.*;
@@ -113,6 +118,25 @@ public class UserController extends BaseController {
         }
     }
     //TODO make view list of followers and following
+
+    @Autowired
+    PostRepository postRepository;
+
+    @Autowired
+    MediaRepository mediaRepository;
+
+    @PostMapping(value = "/profile/users/{user}/post")
+    public UploadPostDTO addPost(@RequestBody UploadPostDTO dto, HttpSession session) throws BaseException{
+        //isLoggedIn(session);
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        Post post = postRepository.save(new Post(dto.getDescription(), dto.getCategoriesId(), user.getId()));
+        for (Media m : dto.getMedia()) {
+            if(m != null){
+                mediaRepository.save(new Media(m.getMediaUrl(), post.getId()));
+            }
+        }
+        return dto;
+    }
 
     /* ************* Edit profile ************* */
 

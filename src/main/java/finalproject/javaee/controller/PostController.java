@@ -2,6 +2,7 @@ package finalproject.javaee.controller;
 
 import finalproject.javaee.dto.*;
 import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
+import finalproject.javaee.dto.MediaInBytesDTO;
 import finalproject.javaee.model.dao.PostDAO;
 import finalproject.javaee.model.pojo.Comment;
 import finalproject.javaee.model.pojo.Media;
@@ -177,26 +178,25 @@ public class PostController extends BaseController {
         throw new NotLoggedException();
     }
 
-    public byte[] downloadImage(String mediaName) throws IOException {
-        File file = new File(mediaName);
-        return Files.readAllBytes(file.toPath());
-    }
-
     @Autowired
     UserRepository userRepository;
 
     @PostMapping(value = "/users/addPost")
-    public void addPost(@RequestBody PostAPostWithMediaDTO dto, HttpSession session) throws NotLoggedException{
-        if(UserController.isLoggedIn(session)) {
+    public void addPost(@RequestBody PostAPostWithMediaDTO dto, HttpSession session) throws NotLoggedException {
+        if (UserController.isLoggedIn(session)) {
             User user = ((User) (session.getAttribute("User")));
             Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
             postRepository.save(p);
             Media m = new Media(p.getId(), dto.getMediaUrl());
             mediaRepository.save(m);
-        }
-        else {
+        } else {
             throw new NotLoggedException();
         }
+    }
+
+    public byte[] downloadImage(String mediaName) throws IOException {
+        File file = new File(mediaName);
+        return Files.readAllBytes(file.toPath());
     }
 
     @GetMapping(value = "/newsfeed")
@@ -229,5 +229,7 @@ public class PostController extends BaseController {
         }
         return new PostWithUserAndMediaDTO(u.getUsername(), u.getPhoto(), postWithMedia);
     }
+
+
 
 }
