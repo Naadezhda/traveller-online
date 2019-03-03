@@ -34,11 +34,8 @@ public class UserController extends BaseController {
     @PostMapping(value = "/register")
     public UserRegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws RegistrationException, IOException, MessagingException {
         validateUsername(user.getUsername());
-        validatePassword(CryptWithMD5.crypt(user.getPassword()),CryptWithMD5.crypt(user.getVerifyPassword()));
-
-        user.setPassword(CryptWithMD5.crypt(user.getPassword()));
-        user.setVerifyPassword(CryptWithMD5.crypt(user.getVerifyPassword()));
-
+        validatePassword(user.getPassword(),user.getVerifyPassword());
+//        user.setVerifyPassword(user.getVerifyPassword());
         validateFirstName(user.getFirstName());
         validateLastName(user.getLastName());
         validateEmail(user.getEmail());
@@ -155,7 +152,7 @@ public class UserController extends BaseController {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         System.out.println(user.getUsername());
         if(isLoggedIn(session)){
-            if(editPasswordDTO.getOldPassword().equals(CryptWithMD5.crypt(user.getPassword()))) {
+            if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
                 validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
                 user.setPassword(editPasswordDTO.getNewPassword());
                 userRepository.save(user);
@@ -173,7 +170,7 @@ public class UserController extends BaseController {
     public void editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session)throws NotLoggedException,BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         if(isLoggedIn(session)){
-            if(editEmailDTO.getPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
+            if(editEmailDTO.getPassword().equals(user.getPassword())){
                 validateEmail(editEmailDTO.getNewEmail());
                 user.setEmail(editEmailDTO.getNewEmail());
                 userRepository.save(user);
@@ -215,7 +212,7 @@ public class UserController extends BaseController {
     public void deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws NotLoggedException,BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         if(isLoggedIn(session)){
-            if(deleteUserProfileDTO.getConfirmPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
+            if(deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())){
                 for(ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
                     userUnfollow(user1.getId(),session);
                 }
@@ -296,7 +293,7 @@ public class UserController extends BaseController {
         }
         else{
             User user = userRepository.findByUsername(username);
-            if(user == null || !CryptWithMD5.crypt(user.getPassword()).equals(password)){
+            if(user == null || !user.getPassword().equals(password)){
                 throw new InvalidLoginException();
             }
         }

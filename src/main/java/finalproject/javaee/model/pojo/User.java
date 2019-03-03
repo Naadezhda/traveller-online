@@ -1,6 +1,7 @@
 package finalproject.javaee.model.pojo;
 
 
+import finalproject.javaee.model.util.CryptWithMD5;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -56,6 +57,22 @@ public class User implements Comparable<User> {
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
     private List<Post> tagPost;
+
+    public String getPassword() {
+        return CryptWithMD5.crypt(password).trim();
+    }
+
+    public String getVerifyPassword() {
+        return CryptWithMD5.crypt(verifyPassword).trim();
+    }
+
+    public void setPassword(String password) {
+        this.password = CryptWithMD5.crypt(password).trim();
+    }
+
+    public void setVerifyPassword(String verifyPassword) {
+        this.verifyPassword = CryptWithMD5.crypt(verifyPassword).trim();
+    }
 
     @Override
     public int compareTo(User o) {
