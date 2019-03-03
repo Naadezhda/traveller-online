@@ -1,19 +1,18 @@
 package finalproject.javaee.controller;
 
-import finalproject.javaee.dto.MediaInBytesDTO;
-import finalproject.javaee.dto.PostAPostWithMediaDTO;
-import finalproject.javaee.dto.PostWithMediaInBytesDTO;
-import finalproject.javaee.dto.PostWithMediaURL;
-import finalproject.javaee.dto.PostWithUserAndMediaDTO;
+import finalproject.javaee.dto.*;
 import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.model.dao.PostDAO;
+import finalproject.javaee.model.pojo.Comment;
 import finalproject.javaee.model.pojo.Media;
 import finalproject.javaee.model.pojo.Post;
 import finalproject.javaee.model.pojo.User;
+import finalproject.javaee.model.repository.CommentRepository;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceprions.BaseException;
+import finalproject.javaee.model.util.exceprions.postsExceptions.IllegalCommentException;
 import finalproject.javaee.model.util.exceprions.postsExceptions.InvalidPostException;
 import finalproject.javaee.model.util.exceprions.postsExceptions.LikedPostException;
 import finalproject.javaee.model.util.exceprions.postsExceptions.NotLikedPostException;
@@ -56,6 +55,37 @@ public class PostController extends BaseController {
            return findPostById(id);
         }
         throw new NotLoggedException();
+    }
+
+    @Autowired
+    CommentRepository commentRepository;
+
+    @PostMapping(value = "/posts/{id}/comment")
+    public UserCommentDTO postComment(@PathVariable("id") long id, @RequestBody String comment, HttpSession session) throws BaseException{
+        if(UserController.isLoggedIn(session)) {
+            User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+            Post post = findPostById(id);
+            Comment com = new Comment(user.getId(), post.getId(), comment);
+            commentRepository.save(com);
+            return new UserCommentDTO(user.getUsername(), user.getPhoto(), comment);
+        }
+        else throw new NotLoggedException();
+    }
+
+    @DeleteMapping(value = "/posts/{id}/comments/{commentId}")
+    public void deleteComment(@PathVariable("id") long id, @PathVariable long commentId, HttpSession session) throws BaseException{
+        if(UserController.isLoggedIn(session)) {
+            User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+            Comment com = commentRepository.findById(commentId);
+            if(commentRepository.findAllByPostId(id).contains(com)){
+                if(com.getUserId() == user.getId()){
+                    commentRepository.delete(com);
+                }
+                else throw new IllegalCommentException("Cannot delete other's comments");
+            }
+            else throw new IllegalCommentException("No such a comment");
+        }
+        else throw new NotLoggedException();
     }
 
     @PostMapping(value = "/posts/{id}/like")
