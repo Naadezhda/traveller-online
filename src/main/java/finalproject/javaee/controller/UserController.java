@@ -1,9 +1,6 @@
 package finalproject.javaee.controller;
 
-import finalproject.javaee.dto.userDTO.UserLoginDTO;
-import finalproject.javaee.dto.userDTO.UserRegisterDTO;
-import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
-import finalproject.javaee.dto.userDTO.LoginDTO;
+import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
 import finalproject.javaee.dto.userDTO.UploadPostDTO;
 import finalproject.javaee.model.pojo.Media;
@@ -12,6 +9,7 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
+import finalproject.javaee.model.util.CryptWithMD5;
 import finalproject.javaee.model.util.MailUtil;
 import finalproject.javaee.model.util.exceprions.*;
 import finalproject.javaee.model.util.exceprions.usersExceptions.*;
@@ -26,6 +24,8 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class UserController extends BaseController {
@@ -33,11 +33,17 @@ public class UserController extends BaseController {
 
     @Autowired
     private UserRepository userRepository;
+    @Autowired
+    private PostController postController;
 
     @PostMapping(value = "/register")
     public UserRegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws RegistrationException, IOException, MessagingException {
         validateUsername(user.getUsername());
-        validatePassword(user.getPassword(),user.getVerifyPassword());
+        validatePassword(CryptWithMD5.crypt(user.getPassword()),CryptWithMD5.crypt(user.getVerifyPassword()));
+
+        user.setPassword(CryptWithMD5.crypt(user.getPassword()));
+        user.setVerifyPassword(CryptWithMD5.crypt(user.getVerifyPassword()));
+
         validateFirstName(user.getFirstName());
         validateLastName(user.getLastName());
         validateEmail(user.getEmail());
@@ -117,34 +123,34 @@ public class UserController extends BaseController {
             throw new NotLoggedException();
         }
     }
-    //TODO make view list of followers and following
 
-    @Autowired
-    PostRepository postRepository;
-
-    @Autowired
-    MediaRepository mediaRepository;
-
-    @PostMapping(value = "/profile/users/{user}/post")
-    public UploadPostDTO addPost(@RequestBody UploadPostDTO dto, HttpSession session) throws BaseException{
-        //isLoggedIn(session);
-        User user = userRepository.findById(getLoggedUserByIdSession(session));
-        Post post = postRepository.save(new Post(dto.getDescription(), dto.getCategoriesId(), user.getId()));
-        for (Media m : dto.getMedia()) {
-            if(m != null){
-                mediaRepository.save(new Media(m.getMediaUrl(), post.getId()));
-            }
+    protected List<ViewUserRelationsDTO> getAllUserFollowers(User user) {
+        List<User> follower = userRepository.findAllByFollowingId(user.getId());
+        List<ViewUserRelationsDTO> userFollowerDTO = new ArrayList<>();
+        for(User u : follower){
+            userFollowerDTO.add(new ViewUserRelationsDTO(u.getId(),u.getFirstName(),u.getLastName()));
         }
-        return dto;
+        return userFollowerDTO;
     }
-
+    protected List<ViewUserRelationsDTO> getAllUserFollowing(User user){
+        List<User> following = userRepository.findAllByFollowerId(user.getId());
+        List<ViewUserRelationsDTO> userFollowingDTO = new ArrayList<>();
+        for (User user1 : following){
+            userFollowingDTO.add(new ViewUserRelationsDTO(user1.getId(),user1.getFirstName(),user1.getLastName()));
+        }
+        return userFollowingDTO;
+    }
+    
     /* ************* Edit profile ************* */
 
     @GetMapping(value = "/profile")
-    public ViewUserProfileDTO viewProfile(HttpSession session) throws NotLoggedException{
+    public ViewUserProfileDTO viewProfile(HttpSession session) throws NotLoggedException, IOException {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         if(isLoggedIn(session)) {
-            return new ViewUserProfileDTO(user.getUsername(), user.getPhoto());
+            return new ViewUserProfileDTO(user.getUsername(),user.getPhoto(),
+                    postController.getAllUserPosts(getLoggedUserByIdSession(session)).size(),postController.getAllUserPosts(getLoggedUserByIdSession(session)),
+                    getAllUserFollowing(user).size(),getAllUserFollowing(user),
+                    getAllUserFollowers(user).size(), getAllUserFollowers(user));
         }
         throw new NotLoggedException();
     }
@@ -154,7 +160,7 @@ public class UserController extends BaseController {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         System.out.println(user.getUsername());
         if(isLoggedIn(session)){
-            if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
+            if(editPasswordDTO.getOldPassword().equals(CryptWithMD5.crypt(user.getPassword()))) {
                 validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
                 user.setPassword(editPasswordDTO.getNewPassword());
                 userRepository.save(user);
@@ -172,7 +178,7 @@ public class UserController extends BaseController {
     public void editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session)throws NotLoggedException,BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         if(isLoggedIn(session)){
-            if(editEmailDTO.getPassword().equals(user.getPassword())){
+            if(editEmailDTO.getPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
                 validateEmail(editEmailDTO.getNewEmail());
                 user.setEmail(editEmailDTO.getNewEmail());
                 userRepository.save(user);
@@ -214,7 +220,10 @@ public class UserController extends BaseController {
     public void deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws NotLoggedException,BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         if(isLoggedIn(session)){
-            if(deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())){
+            if(deleteUserProfileDTO.getConfirmPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
+                for(ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
+                    userUnfollow(user1.getId(),session);
+                }
                 userLogout(session);
                 userRepository.delete(user);
             }
@@ -288,7 +297,7 @@ public class UserController extends BaseController {
         }
         else{
             User user = userRepository.findByUsername(username);
-            if(user == null || !user.getPassword().equals(password)){
+            if(user == null || !CryptWithMD5.crypt(user.getPassword()).equals(password)){
                 throw new InvalidLoginException();
             }
         }

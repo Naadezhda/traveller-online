@@ -9,6 +9,7 @@ import javax.mail.internet.MimeMessage;
 import java.util.Date;
 import java.util.Properties;
 
+
 public class MailUtil {
 
 public void sendMail(String from, String to, String subject, String content) throws MessagingException {
@@ -20,7 +21,7 @@ public void sendMail(String from, String to, String subject, String content) thr
 
     Session session = Session.getInstance(properties, new javax.mail.Authenticator() {
         protected PasswordAuthentication getPasswordAuthentication() {
-            return new PasswordAuthentication("nadejdab29@gmail.com", "password");
+            return new PasswordAuthentication("nadejdab29@gmail.com", "fearfaxx7");
         }
     });
 

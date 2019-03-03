@@ -160,23 +160,36 @@ public class PostController extends BaseController {
     @GetMapping(value = "/profile/users/{user}")
     public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws NotLoggedException, IOException{
         if(UserController.isLoggedIn(session)) {
-            List<Post> posts = dao.getPostsByUser(user_id);
             User u = ur.findById(user_id);
             String username = u.getUsername();
             String photo = u.getPhoto();
-            List<PostWithMediaInBytesDTO> postWithMedia = new ArrayList<>();
-            for (Post p : posts) {
-                List<Media> postMedia = mediaRepository.findAllByPostId(p.getId());
-                List<MediaInBytesDTO> postMediaBytes = new ArrayList<>();
-                for (Media m : postMedia) {
-                    postMediaBytes.add(new MediaInBytesDTO(downloadImage(m.getMediaUrl())));
-                }
-                postWithMedia.add(new PostWithMediaInBytesDTO(p, postMediaBytes));
-            }
-            return new ViewUserProfileDTO(username, photo, postWithMedia);
+            return new ViewUserProfileDTO(username, photo,getAllUserPosts(user_id).size(), getAllUserPosts(user_id),
+                    userController.getAllUserFollowing(u).size(),userController.getAllUserFollowing(u),
+                    userController.getAllUserFollowers(u).size(),userController.getAllUserFollowers(u));
         }
         throw new NotLoggedException();
     }
+
+    protected List<PostWithMediaInBytesDTO> getAllUserPosts(Long id) throws IOException{
+        List<Post> posts = dao.getPostsByUser(id);
+        List<PostWithMediaInBytesDTO> postWithMedia = new ArrayList<>();
+        for(Post p : posts){
+            List<Media> postMedia = mediaRepository.findAllByPostId(p.getId());
+            List<MediaInBytesDTO> postMediaBytes = new ArrayList<>();
+            for(Media m : postMedia){
+                postMediaBytes.add(new MediaInBytesDTO(downloadImage(m.getMediaUrl())));
+            }
+            postWithMedia.add(new PostWithMediaInBytesDTO(p,postMediaBytes));
+        }
+        return postWithMedia;
+    }
+
+    public byte[] downloadImage(String mediaName) throws IOException {
+        File file = new File(mediaName);
+        return Files.readAllBytes(file.toPath());
+    }
+
+
 
     @Autowired
     UserRepository userRepository;
@@ -194,11 +207,6 @@ public class PostController extends BaseController {
         }
     }
 
-    public byte[] downloadImage(String mediaName) throws IOException {
-        File file = new File(mediaName);
-        return Files.readAllBytes(file.toPath());
-    }
-
     @GetMapping(value = "/newsfeed")
     public List<PostWithUserAndMediaDTO> getAll(HttpSession session) throws NotLoggedException{
         if(UserController.isLoggedIn(session)) {
@@ -207,7 +215,6 @@ public class PostController extends BaseController {
         }
         throw new NotLoggedException();
     }
-
 
     public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) {
         List<User> users = userRepository.findAllByFollowerId(user.getId());
