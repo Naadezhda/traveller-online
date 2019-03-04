@@ -61,11 +61,9 @@ public abstract class BaseController {
         return message;
     }
 
-
     protected void validateisLoggedIn(HttpSession session) throws NotLoggedException{
         if (session.isNew() && session.getAttribute("Username") == null){
             throw new NotLoggedException();
         }
     }
-
 }

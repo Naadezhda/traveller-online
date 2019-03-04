@@ -7,4 +7,8 @@ public class PostExistException extends ExistException {
     public PostExistException() {
         super("Post does not exist.");
     }
+
+    public PostExistException(String message){
+        super(message);
+    }
 }

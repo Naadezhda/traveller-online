@@ -71,7 +71,7 @@ public class TagController extends BaseController {
 
     private void validateIfPostExist(long postId)throws PostExistException {
         if(!postRepository.existsById(postId)) {
-            throw new PostExistException();
+            throw new PostExistException("Post doesn't exist");
         }
     }
 }

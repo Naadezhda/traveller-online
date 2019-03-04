@@ -70,7 +70,6 @@ public class UserController extends BaseController {
     public UserLoginDTO userLogin(@RequestBody LoginDTO loginDTO, HttpSession session) throws BaseException {
         User user = userRepository.findByUsername(loginDTO.getUsername());
         if (!isLoggedIn(session)) {
-            System.out.println(loginDTO.getPassword());
             validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
             session.setAttribute("User", user);
             session.setAttribute("Username", user.getUsername());
@@ -96,17 +95,17 @@ public class UserController extends BaseController {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         User followingUser = userRepository.findById(id);
         validateisLoggedIn(session);
-            if (userRepository.existsById(id)) {
-                if (!user.getFollowing().contains(followingUser)) {
-                    followingUser.getFollower().add(user);
-                    user.getFollowing().add(followingUser);
-                    userRepository.save(user);
-                } else {
-                    throw new FollowException("Already followed.");
-                }
+        if (userRepository.existsById(id)) {
+            if (!user.getFollowing().contains(followingUser)) {
+                followingUser.getFollower().add(user);
+                user.getFollowing().add(followingUser);
+                userRepository.save(user);
             } else {
-                throw new UserExistException();
+                throw new FollowException("Already followed.");
             }
+        } else {
+            throw new UserExistException();
+        }
     }
 
     @DeleteMapping(value = "/unfollow/{id}")
@@ -114,17 +113,17 @@ public class UserController extends BaseController {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         User unfollowingUser = userRepository.findById(id);
         validateisLoggedIn(session);
-            if (userRepository.existsById(id)) {
-                if (user.getFollowing().contains(unfollowingUser)) {
-                    unfollowingUser.getFollower().remove(user);
-                    user.getFollowing().remove(unfollowingUser);
-                    userRepository.save(user);
-                } else {
-                    throw new FollowException("User is not followed.");
-                }
+        if (userRepository.existsById(id)) {
+            if (user.getFollowing().contains(unfollowingUser)) {
+                unfollowingUser.getFollower().remove(user);
+                user.getFollowing().remove(unfollowingUser);
+                userRepository.save(user);
             } else {
-                throw new UserExistException();
+                throw new FollowException("User is not followed.");
             }
+        } else {
+            throw new UserExistException();
+        }
     }
 
     protected List<ViewUserRelationsDTO> getAllUserFollowers(User user) {
@@ -143,32 +142,32 @@ public class UserController extends BaseController {
         }
         return userFollowingDTO;
     }
-    
+
     /* ************* Edit profile ************* */
 
     @GetMapping(value = "/profile")
     public ViewUserProfileDTO viewProfile(HttpSession session) throws Exception {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         validateisLoggedIn(session);
-            return new ViewUserProfileDTO(user.getUsername(),user.getPhoto(),
-                    postController.getAllUserPosts(getLoggedUserByIdSession(session)).size(),postController.getAllUserPosts(getLoggedUserByIdSession(session)),
-                    getAllUserFollowing(user).size(),getAllUserFollowing(user),
-                    getAllUserFollowers(user).size(), getAllUserFollowers(user));
+        return new ViewUserProfileDTO(user.getUsername(),user.getPhoto(),
+                postController.getAllUserPosts(getLoggedUserByIdSession(session)).size(),postController.getAllUserPosts(getLoggedUserByIdSession(session)),
+                getAllUserFollowing(user).size(),getAllUserFollowing(user),
+                getAllUserFollowers(user).size(), getAllUserFollowers(user));
     }
 
     @PutMapping(value = "/profile/edit/password")
     public void editPassword(@RequestBody EditPasswordDTO editPasswordDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         validateisLoggedIn(session);
-            if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
+        if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
 //        if(editPasswordDTO.getOldPassword().equals(CryptWithMD5.crypt(user.getPassword()))) {
             validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
-                user.setPassword(editPasswordDTO.getNewPassword());
-                userRepository.save(user);
-            }
-            else {
-                throw new WrongPasswordInputException();
-            }
+            user.setPassword(editPasswordDTO.getNewPassword());
+            userRepository.save(user);
+        }
+        else {
+            throw new WrongPasswordInputException();
+        }
     }
 
     @PutMapping(value = "/profile/edit/email")
@@ -176,32 +175,32 @@ public class UserController extends BaseController {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         validateisLoggedIn(session);
 //            if(editEmailDTO.getPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
-                if(editEmailDTO.getPassword().equals(user.getPassword())){
-                    validateEmail(editEmailDTO.getNewEmail());
-                    user.setEmail(editEmailDTO.getNewEmail());
-                    userRepository.save(user);
-            }
-            else{
-                throw new WrongPasswordInputException();
-            }
+        if(editEmailDTO.getPassword().equals(user.getPassword())){
+            validateEmail(editEmailDTO.getNewEmail());
+            user.setEmail(editEmailDTO.getNewEmail());
+            userRepository.save(user);
+        }
+        else{
+            throw new WrongPasswordInputException();
+        }
     }
 
     @PutMapping(value = "profile/edit/firstName")
     public void editFirstName(@RequestBody EditFirstNameDTO editFirstNameDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         validateisLoggedIn(session);
-            validateFirstName(editFirstNameDTO.getNewFirstName());
-            user.setFirstName(editFirstNameDTO.getNewFirstName());
-            userRepository.save(user);
+        validateFirstName(editFirstNameDTO.getNewFirstName());
+        user.setFirstName(editFirstNameDTO.getNewFirstName());
+        userRepository.save(user);
     }
 
     @PutMapping(value = "/profile/edit/lastName")
     public void editLastName(@RequestBody EditLastNameDTO editLastNameDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         validateisLoggedIn(session);
-            validateLastName(editLastNameDTO.getNewLastName());
-            user.setLastName(editLastNameDTO.getNewLastName());
-            userRepository.save(user);
+        validateLastName(editLastNameDTO.getNewLastName());
+        user.setLastName(editLastNameDTO.getNewLastName());
+        userRepository.save(user);
     }
 
     @DeleteMapping(value = "/profile/edit/delete")
@@ -211,14 +210,14 @@ public class UserController extends BaseController {
 //            if(deleteUserProfileDTO.getConfirmPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
         if(deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())){
             for(ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
-                    userUnfollow(user1.getId(),session);
-                }
-                userLogout(session);
-                userRepository.delete(user);
+                userUnfollow(user1.getId(),session);
             }
-            else{
-                throw new WrongPasswordInputException();
-            }
+            userLogout(session);
+            userRepository.delete(user);
+        }
+        else{
+            throw new WrongPasswordInputException();
+        }
     }
 
     /* ************* Validations ************* */
@@ -286,7 +285,6 @@ public class UserController extends BaseController {
         }
         else{
             User user = userRepository.findByUsername(username);
-            System.out.println(user.getPassword() + " ============ " + password);
             if(user == null || !user.getPassword().equals(password)){
                 throw new InvalidLoginException();
             }

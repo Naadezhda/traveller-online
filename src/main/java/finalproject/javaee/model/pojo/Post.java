@@ -5,7 +5,9 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @Getter
@@ -25,11 +27,11 @@ public class Post {
 
     @ManyToMany(fetch = FetchType.EAGER,
             mappedBy = "likedPosts")
-    private List<User> usersWhoLiked;
+    private Set<User> usersWhoLiked;
 
     @ManyToMany(fetch = FetchType.EAGER,
             mappedBy = "tagPost")
-    private List<User> tagUser;
+    private Set<User> tagUser;
 
     public Post(String description) {
         this.description = description;
@@ -43,12 +45,4 @@ public class Post {
         this.locationId = locationId;
         this.categoriesId = categoriesId;
     }
-
-    public Post(String description, long categoriesId, long userId) {
-        this(description);
-        this.categoriesId = categoriesId;
-        this.userId = userId;
-    }
-
-
 }

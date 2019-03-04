@@ -26,9 +26,4 @@ public class Media {
         this.mediaUrl = mediaUrl;
 
     }
-
-    public Media(String mediaUrl, long postId){
-        this.mediaUrl = mediaUrl;
-        this.postId = postId;
-    }
 }

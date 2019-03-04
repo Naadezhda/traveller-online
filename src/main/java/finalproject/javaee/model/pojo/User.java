@@ -1,15 +1,16 @@
 package finalproject.javaee.model.pojo;
 
-
 import finalproject.javaee.model.util.CryptWithMD5;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.Cascade;
 
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.List;
+import java.util.Set;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -52,13 +53,25 @@ public class User implements Comparable<User> {
     @JoinTable(name = "likes_posts",
             joinColumns = @JoinColumn(name = "user_id" , referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
-    private List<Post> likedPosts;
+    private Set<Post> likedPosts;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "tags",
             joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "post_id", referencedColumnName = "id"))
-    private List<Post> tagPost;
+    private Set<Post> tagPost;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
+    @JoinTable(name = "likes_comments",
+            joinColumns = @JoinColumn(name = "user_id" , referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "comment_id", referencedColumnName = "id"))
+    private Set<Comment> likedComments;
+
+    public void removeLikedComment(Comment comment) {
+        likedComments.remove(comment);
+        comment.getUsersWhoLiked().remove(this);
+    }
 
     public String getPassword() {
         return CryptWithMD5.crypt(password).trim();

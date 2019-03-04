@@ -1,6 +1,5 @@
 package finalproject.javaee.dto;
 
-import finalproject.javaee.dto.PostWithMediaURL;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,8 +15,6 @@ public class PostWithUserAndMediaDTO {
 
     private String username;
     private String photo;
-    private List<PostWithMediaURL> posts;
-
-
+    private List<PostWithMediaURL> postsWithMedia;
 
 }
