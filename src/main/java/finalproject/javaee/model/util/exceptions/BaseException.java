@@ -1,4 +1,4 @@
-package finalproject.javaee.model.util.exceprions;
+package finalproject.javaee.model.util.exceptions;
 
 public class BaseException extends Exception {
 

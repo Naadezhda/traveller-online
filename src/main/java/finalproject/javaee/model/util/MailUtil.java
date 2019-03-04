@@ -12,7 +12,7 @@ import java.util.Properties;
 
 public class MailUtil {
 
-public void sendMail(String from, String to, String subject, String content) throws MessagingException {
+public static void sendMail(String from, String to, String subject, String body) throws MessagingException {
     Properties properties = new Properties();
     properties.put("mail.smtp.auth", "true");
     properties.put("mail.smtp.starttls.enable", "true");
@@ -30,7 +30,7 @@ public void sendMail(String from, String to, String subject, String content) thr
 
     msg.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
     msg.setSubject(subject);
-    msg.setText(content);
+    msg.setText(body);
     msg.setSentDate(new Date());
 
     MimeBodyPart messageBodyPart = new MimeBodyPart();

@@ -28,15 +28,7 @@ public class EditPasswordDTO {
         return CryptWithMD5.crypt(newPassword).trim();
     }
 
-    public void setNewPassword(String newPassword) {
-        this.newPassword = CryptWithMD5.crypt(newPassword).trim();
-    }
-
     public String getVerifyNewPassword() {
         return CryptWithMD5.crypt(verifyNewPassword).trim();
-    }
-
-    public void setVerifyNewPassword(String verifyNewPassword) {
-        this.verifyNewPassword = CryptWithMD5.crypt(verifyNewPassword).trim();
     }
 }

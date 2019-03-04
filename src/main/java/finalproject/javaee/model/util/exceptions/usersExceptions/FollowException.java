@@ -1,6 +1,6 @@
-package finalproject.javaee.model.util.exceprions.usersExceptions;
+package finalproject.javaee.model.util.exceptions.usersExceptions;
 
-import finalproject.javaee.model.util.exceprions.BaseException;
+import finalproject.javaee.model.util.exceptions.BaseException;
 
 public class FollowException extends BaseException {
 

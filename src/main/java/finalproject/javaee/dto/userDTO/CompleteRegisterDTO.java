@@ -10,11 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Setter
 @Getter
-public class ViewUserRelationsDTO {
+public class CompleteRegisterDTO {
 
-    private long id;
-    private String username;
-    private String firstName;
-    private String lastName;
-    private String photo;
+    private long secureCode;
 }

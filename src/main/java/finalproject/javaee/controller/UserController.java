@@ -6,25 +6,21 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.CryptWithMD5;
 import finalproject.javaee.model.util.MailUtil;
-import finalproject.javaee.model.util.exceprions.*;
-import finalproject.javaee.model.util.exceprions.usersExceptions.*;
-import finalproject.javaee.model.util.exceprions.usersExceptions.InvalidLoginException;
-import finalproject.javaee.model.util.exceprions.usersExceptions.UserLoggedInException;
-import finalproject.javaee.model.util.exceprions.usersRegistrationExcepions.*;
+import finalproject.javaee.model.util.exceptions.*;
+import finalproject.javaee.model.util.exceptions.usersExceptions.*;
+import finalproject.javaee.model.util.exceptions.usersExceptions.InvalidLoginException;
+import finalproject.javaee.model.util.exceptions.usersExceptions.UserLoggedInException;
+import finalproject.javaee.model.util.exceptions.usersRegistrationExcepions.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class UserController extends BaseController {
-
 
     @Autowired
     private UserRepository userRepository;
@@ -32,28 +28,49 @@ public class UserController extends BaseController {
     private PostController postController;
 
     @PostMapping(value = "/register")
-    public UserRegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws RegistrationException, IOException, MessagingException {
+    public UserRegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws Exception {
         validateUsername(user.getUsername());
         validatePassword(user.getPassword(),user.getVerifyPassword());
-//        user.setVerifyPassword(user.getVerifyPassword());
+
+//        validatePassword(CryptWithMD5.crypt(user.getPassword()),CryptWithMD5.crypt(user.getVerifyPassword()));
+//        user.setPassword(CryptWithMD5.crypt(user.getPassword()));
+//        user.setVerifyPassword(CryptWithMD5.crypt(user.getVerifyPassword()));
+
         validateFirstName(user.getFirstName());
         validateLastName(user.getLastName());
         validateEmail(user.getEmail());
         validateGender(user.getGender());
+
+        long code = System.currentTimeMillis();
+        user.setSecureCode(code);
+        MailUtil.sendMail("nadejdab29@gmail.bg",user.getEmail(),"Confirm registration by email.",
+                "To complete your registration, enter the following code  " + code + " ");
+
         userRepository.save(user);
         session.setAttribute("User", user);
         session.setAttribute("Username", user.getUsername());
-        MailUtil mailUtil = new MailUtil();
-        mailUtil.sendMail("nadejdab29@gmail.bg",user.getEmail(),"Confirm registration by email.","BODY");
-        //TODO send code or file list
         return new UserRegisterDTO(user.getId(),user.getUsername(),user.getFirstName(),
                 user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
+
+//    @PostMapping(value = "/register/complete")
+//    private UserRegisterDTO completeRegisterWithMeil(User user,HttpSession session)throws BaseException {
+//        if(user.getSecureCode() == ){
+//            userRepository.save(user);
+//            session.setAttribute("User", user);
+//            session.setAttribute("Username", user.getUsername());
+//            return new UserRegisterDTO(user.getId(),user.getUsername(),user.getFirstName(),
+//                    user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
+//
+//        }
+//        throw new BaseException("wywedohte greshen kod. Opitajte pak");
+//    }
 
     @PostMapping(value = "/login")
     public UserLoginDTO userLogin(@RequestBody LoginDTO loginDTO, HttpSession session) throws BaseException {
         User user = userRepository.findByUsername(loginDTO.getUsername());
         if (!isLoggedIn(session)) {
+            System.out.println(loginDTO.getPassword());
             validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
             session.setAttribute("User", user);
             session.setAttribute("Username", user.getUsername());
@@ -65,7 +82,7 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "/logout")
-    public void userLogout(HttpSession session) throws UserLoggedOutException {
+    public void userLogout(HttpSession session) throws BaseException {
         if (!isLoggedIn(session)) {
             throw new UserLoggedOutException();
         }
@@ -75,10 +92,10 @@ public class UserController extends BaseController {
     /* ************* Follow and Unfollow ************* */
 
     @GetMapping(value = "/follow/{id}")
-    public void userFollow(@PathVariable("id") long id, HttpSession session) throws NotLoggedException, BaseException {
+    public void userFollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         User followingUser = userRepository.findById(id);
-        if (isLoggedIn(session)) {
+        validateisLoggedIn(session);
             if (userRepository.existsById(id)) {
                 if (!user.getFollowing().contains(followingUser)) {
                     followingUser.getFollower().add(user);
@@ -90,16 +107,13 @@ public class UserController extends BaseController {
             } else {
                 throw new UserExistException();
             }
-        } else {
-            throw new NotLoggedException();
-        }
     }
 
     @DeleteMapping(value = "/unfollow/{id}")
-    public void userUnfollow(@PathVariable("id") long id, HttpSession session) throws NotLoggedException,BaseException {
+    public void userUnfollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         User unfollowingUser = userRepository.findById(id);
-        if (isLoggedIn(session)) {
+        validateisLoggedIn(session);
             if (userRepository.existsById(id)) {
                 if (user.getFollowing().contains(unfollowingUser)) {
                     unfollowingUser.getFollower().remove(user);
@@ -111,16 +125,13 @@ public class UserController extends BaseController {
             } else {
                 throw new UserExistException();
             }
-        } else {
-            throw new NotLoggedException();
-        }
     }
 
     protected List<ViewUserRelationsDTO> getAllUserFollowers(User user) {
         List<User> follower = userRepository.findAllByFollowingId(user.getId());
         List<ViewUserRelationsDTO> userFollowerDTO = new ArrayList<>();
         for(User u : follower){
-            userFollowerDTO.add(new ViewUserRelationsDTO(u.getId(),u.getFirstName(),u.getLastName()));
+            userFollowerDTO.add(new ViewUserRelationsDTO(u.getId(),u.getUsername(),u.getFirstName(),u.getLastName(),u.getPhoto()));
         }
         return userFollowerDTO;
     }
@@ -128,7 +139,7 @@ public class UserController extends BaseController {
         List<User> following = userRepository.findAllByFollowerId(user.getId());
         List<ViewUserRelationsDTO> userFollowingDTO = new ArrayList<>();
         for (User user1 : following){
-            userFollowingDTO.add(new ViewUserRelationsDTO(user1.getId(),user1.getFirstName(),user1.getLastName()));
+            userFollowingDTO.add(new ViewUserRelationsDTO(user1.getId(), user1.getUsername(),user1.getFirstName(),user1.getLastName(), user1.getPhoto()));
         }
         return userFollowingDTO;
     }
@@ -136,84 +147,70 @@ public class UserController extends BaseController {
     /* ************* Edit profile ************* */
 
     @GetMapping(value = "/profile")
-    public ViewUserProfileDTO viewProfile(HttpSession session) throws NotLoggedException, IOException {
+    public ViewUserProfileDTO viewProfile(HttpSession session) throws Exception {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        if(isLoggedIn(session)) {
+        validateisLoggedIn(session);
             return new ViewUserProfileDTO(user.getUsername(),user.getPhoto(),
                     postController.getAllUserPosts(getLoggedUserByIdSession(session)).size(),postController.getAllUserPosts(getLoggedUserByIdSession(session)),
                     getAllUserFollowing(user).size(),getAllUserFollowing(user),
                     getAllUserFollowers(user).size(), getAllUserFollowers(user));
-        }
-        throw new NotLoggedException();
     }
 
     @PutMapping(value = "/profile/edit/password")
-    public void editPassword(@RequestBody EditPasswordDTO editPasswordDTO, HttpSession session) throws NotLoggedException,BaseException{
+    public void editPassword(@RequestBody EditPasswordDTO editPasswordDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        System.out.println(user.getUsername());
-        if(isLoggedIn(session)){
+        validateisLoggedIn(session);
             if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
-                validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
+//        if(editPasswordDTO.getOldPassword().equals(CryptWithMD5.crypt(user.getPassword()))) {
+            validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
                 user.setPassword(editPasswordDTO.getNewPassword());
                 userRepository.save(user);
             }
             else {
                 throw new WrongPasswordInputException();
             }
-        }
-        else {
-            throw new NotLoggedException();
-        }
     }
 
     @PutMapping(value = "/profile/edit/email")
-    public void editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session)throws NotLoggedException,BaseException{
+    public void editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session)throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        if(isLoggedIn(session)){
-            if(editEmailDTO.getPassword().equals(user.getPassword())){
-                validateEmail(editEmailDTO.getNewEmail());
-                user.setEmail(editEmailDTO.getNewEmail());
-                userRepository.save(user);
+        validateisLoggedIn(session);
+//            if(editEmailDTO.getPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
+                if(editEmailDTO.getPassword().equals(user.getPassword())){
+                    validateEmail(editEmailDTO.getNewEmail());
+                    user.setEmail(editEmailDTO.getNewEmail());
+                    userRepository.save(user);
             }
             else{
                 throw new WrongPasswordInputException();
             }
-        }
-        else {
-            throw new NotLoggedException();
-        }
     }
 
     @PutMapping(value = "profile/edit/firstName")
-    public void editFirstName(@RequestBody EditFirstNameDTO editFirstNameDTO, HttpSession session) throws NotLoggedException,BaseException{
+    public void editFirstName(@RequestBody EditFirstNameDTO editFirstNameDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        if(isLoggedIn(session)){
+        validateisLoggedIn(session);
             validateFirstName(editFirstNameDTO.getNewFirstName());
             user.setFirstName(editFirstNameDTO.getNewFirstName());
             userRepository.save(user);
-        }else {
-            throw new NotLoggedException();
-        }
     }
 
     @PutMapping(value = "/profile/edit/lastName")
-    public void editLastName(@RequestBody EditLastNameDTO editLastNameDTO, HttpSession session) throws NotLoggedException,BaseException{
+    public void editLastName(@RequestBody EditLastNameDTO editLastNameDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        if(isLoggedIn(session)){
+        validateisLoggedIn(session);
             validateLastName(editLastNameDTO.getNewLastName());
             user.setLastName(editLastNameDTO.getNewLastName());
             userRepository.save(user);
-        }else {
-            throw new NotLoggedException();
-        }
     }
 
     @DeleteMapping(value = "/profile/edit/delete")
-    public void deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws NotLoggedException,BaseException{
+    public void deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        if(isLoggedIn(session)){
-            if(deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())){
-                for(ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
+        validateisLoggedIn(session);
+//            if(deleteUserProfileDTO.getConfirmPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
+        if(deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())){
+            for(ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
                     userUnfollow(user1.getId(),session);
                 }
                 userLogout(session);
@@ -222,10 +219,6 @@ public class UserController extends BaseController {
             else{
                 throw new WrongPasswordInputException();
             }
-        }
-        else {
-            throw new NotLoggedException();
-        }
     }
 
     /* ************* Validations ************* */
@@ -293,6 +286,7 @@ public class UserController extends BaseController {
         }
         else{
             User user = userRepository.findByUsername(username);
+            System.out.println(user.getPassword() + " ============ " + password);
             if(user == null || !user.getPassword().equals(password)){
                 throw new InvalidLoginException();
             }

@@ -3,6 +3,7 @@ package finalproject.javaee.controller;
 import finalproject.javaee.dto.*;
 import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.dto.MediaInBytesDTO;
+import finalproject.javaee.dto.userDTO.ViewUserRelationsDTO;
 import finalproject.javaee.model.dao.PostDAO;
 import finalproject.javaee.model.pojo.Comment;
 import finalproject.javaee.model.pojo.Media;
@@ -12,12 +13,12 @@ import finalproject.javaee.model.repository.CommentRepository;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.exceprions.BaseException;
-import finalproject.javaee.model.util.exceprions.postsExceptions.IllegalCommentException;
-import finalproject.javaee.model.util.exceprions.postsExceptions.InvalidPostException;
-import finalproject.javaee.model.util.exceprions.postsExceptions.LikedPostException;
-import finalproject.javaee.model.util.exceprions.postsExceptions.NotLikedPostException;
-import finalproject.javaee.model.util.exceprions.usersExceptions.NotLoggedException;
+import finalproject.javaee.model.util.exceptions.BaseException;
+import finalproject.javaee.model.util.exceptions.postsExceptions.IllegalCommentException;
+import finalproject.javaee.model.util.exceptions.postsExceptions.InvalidPostException;
+import finalproject.javaee.model.util.exceptions.postsExceptions.LikedPostException;
+import finalproject.javaee.model.util.exceptions.postsExceptions.NotLikedPostException;
+import finalproject.javaee.model.util.exceptions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class PostController extends BaseController {
@@ -127,13 +127,6 @@ public class PostController extends BaseController {
 
 
     public Post findPostById(long id) throws BaseException {
-//        Optional<Post> post = postRepository.findById(id);
-//        if (post.isPresent()) {
-//            return post.get();
-//        } else {
-//            throw new InvalidPostException();
-//        }
-        //TODO ne raboteshe po gorniq nachin
         Post post = postRepository.findById(id);
         if(!postRepository.existsById(id)){
             throw new InvalidPostException();
@@ -145,15 +138,14 @@ public class PostController extends BaseController {
     @GetMapping(value = "/newsfeed/categories/{category}")
     public List<PostWithUserAndMediaDTO> getPostsByCategory(@PathVariable("category") int categoryId, HttpSession session) throws NotLoggedException{
         if(UserController.isLoggedIn(session)) {
-            User user = ((User) (session.getAttribute("User")));
-            List<User> users = userRepository.findAllByFollowerId(user.getId());
+            User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+            List<ViewUserRelationsDTO> users = userController.getAllUserFollowing(user);
             List<PostWithUserAndMediaDTO> postsByFollowingWithMedia = new ArrayList<>();
-            for (User u : users) {
+            for (ViewUserRelationsDTO u : users) {
                 List<Post> postsByFollowing = postRepository.findAllByUserIdAndCategoriesId(u.getId(), categoryId);
-                if(postsByFollowing.size() > 0) {
+
                     PostWithUserAndMediaDTO post = getPostsByUserWithMedia(u, postsByFollowing);
                     postsByFollowingWithMedia.add(post);
-                }
             }
             return postsByFollowingWithMedia;
         }
@@ -219,7 +211,8 @@ public class PostController extends BaseController {
     @GetMapping(value = "/newsfeed")
     public List<PostWithUserAndMediaDTO> getAll(HttpSession session) throws NotLoggedException{
         if(UserController.isLoggedIn(session)) {
-            User user = ((User) (session.getAttribute("User")));
+//            User user = ((User) (session.getAttribute("User")));
+            User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
             return getAllPostsByFollowings(user);
         }
         throw new NotLoggedException();
@@ -227,9 +220,11 @@ public class PostController extends BaseController {
 
 
     public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) {
-        List<User> users = userRepository.findAllByFollowerId(user.getId());
+        List<ViewUserRelationsDTO> users = userController.getAllUserFollowing(user);
+
         List<PostWithUserAndMediaDTO> allPostsByFollowings = new ArrayList<>();
-        for (User u : users) {
+
+        for (ViewUserRelationsDTO u : users) {
             List<Post> postsByFollowing = postRepository.findAllByUserId(u.getId());
             PostWithUserAndMediaDTO post = getPostsByUserWithMedia(u, postsByFollowing);
             allPostsByFollowings.add(post);
@@ -237,12 +232,15 @@ public class PostController extends BaseController {
         return allPostsByFollowings;
     }
 
-    public PostWithUserAndMediaDTO getPostsByUserWithMedia(User u, List<Post> postsByFollowing) {
-        List<Media> media;
+    public PostWithUserAndMediaDTO getPostsByUserWithMedia(ViewUserRelationsDTO u, List<Post> postsByFollowing) {
         List<PostWithMediaURL> postWithMedia = new ArrayList<>();
+        List<PostDTO> post3 = new ArrayList<>();
         for (Post p : postsByFollowing) {
-            media = mediaRepository.findAllByPostId(p.getId());
-            postWithMedia.add(new PostWithMediaURL(p, media));
+            post3.add(new PostDTO(p.getId(), p.getDescription(), p.getLocationId(), p.getCategoriesId(), p.getDate()));
+        }
+        for (PostDTO pe : post3) {
+            List<Media> media = mediaRepository.findAllByPostId(pe.getId());
+            postWithMedia.add(new PostWithMediaURL(pe, media));
         }
         return new PostWithUserAndMediaDTO(u.getUsername(), u.getPhoto(), postWithMedia);
     }
