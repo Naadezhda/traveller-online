@@ -38,7 +38,7 @@ public class User implements Comparable<User> {
     private String gender;
     @Transient
     private long secureCode;
-    
+
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(name = "relations",
             joinColumns = @JoinColumn(name = "follower_id"),

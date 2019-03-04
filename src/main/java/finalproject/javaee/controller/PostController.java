@@ -1,5 +1,6 @@
 package finalproject.javaee.controller;
 
+import com.sun.tools.javac.code.Attribute;
 import finalproject.javaee.dto.*;
 import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.MediaInBytesDTO;
@@ -130,16 +131,20 @@ public class PostController extends BaseController {
         throw new NotLoggedException();
     }
 
+    public enum Filter {
+        LIKES, DATE
+    }
+
     @PostMapping(value = "/newsfeed")
-    public List<PostWithUserAndMediaDTO> getAllOrderedByLikes(@RequestBody String filter, HttpSession session) throws NotLoggedException{
+    public List<PostWithUserAndMediaDTO> getAllOrderedByLikes(@RequestBody Filter filter, HttpSession session) throws NotLoggedException{
         userController.getLoggedUserByIdSession(session);
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         List<PostWithUserAndMediaDTO> posts = getAllPostsByFollowings(user);
         switch(filter){
-            case "likes":
+            case LIKES:
                Collections.sort(posts, new PostsByLikesComparator());
                break;
-            case "date":
+            case DATE:
                 Collections.sort(posts, new PostsByDateComparator());
                 break;
         }
