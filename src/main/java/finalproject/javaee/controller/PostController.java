@@ -136,7 +136,7 @@ public class PostController extends BaseController {
     }
 
     @PostMapping(value = "/newsfeed")
-    public List<PostWithUserAndMediaDTO> getAllOrderedByLikes(@RequestBody Filter filter, HttpSession session) throws NotLoggedException{
+    public List<PostWithUserAndMediaDTO> getAllOrdered(@RequestBody Filter filter, HttpSession session) throws NotLoggedException{
         userController.getLoggedUserByIdSession(session);
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         List<PostWithUserAndMediaDTO> posts = getAllPostsByFollowings(user);
