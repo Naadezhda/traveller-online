@@ -11,8 +11,11 @@ import finalproject.javaee.model.util.exceptions.usersExceptions.*;
 import finalproject.javaee.model.util.exceptions.usersExceptions.InvalidLoginException;
 import finalproject.javaee.model.util.exceptions.usersExceptions.UserLoggedInException;
 import finalproject.javaee.model.util.exceptions.usersRegistrationExcepions.*;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpSession;
@@ -22,13 +25,15 @@ import java.util.List;
 @RestController
 public class UserController extends BaseController {
 
+    static Logger logger = Logger.getLogger(UserController.class.getName());
+
     @Autowired
     private UserRepository userRepository;
     @Autowired
     private PostController postController;
 
     @PostMapping(value = "/register")
-    public UserRegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws Exception {
+    public void userRegistration(@RequestBody User user, HttpSession session) throws Exception {
         validateUsername(user.getUsername());
         validatePassword(user.getPassword(),user.getVerifyPassword());
 
@@ -41,30 +46,49 @@ public class UserController extends BaseController {
         validateEmail(user.getEmail());
         validateGender(user.getGender());
 
-        long code = System.currentTimeMillis();
-        user.setSecureCode(code);
-        MailUtil.sendMail("nadejdab29@gmail.bg",user.getEmail(),"Confirm registration by email.",
-                "To complete your registration, enter the following code  " + code + " ");
+        user.setSecureCode(key());
+        String key = user.getSecureCode();
 
+        new Thread(()-> {
+            try {
+
+                MailUtil.sendMail("nadejdab29@gmail.bg", user.getEmail(), "Confirm registration by email.",
+                        "To complete your registration, enter the following code  " + key + " ");
+            } catch (Exception e) {
+                logger.error(e.getMessage());
+            }
+        }).start();
         userRepository.save(user);
         session.setAttribute("User", user);
         session.setAttribute("Username", user.getUsername());
+    }
+
+    private String key() throws Exception{
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(128);
+        SecretKey secretKey = keyGenerator.generateKey();
+        return secretKey.toString();
+    }
+
+
+    @PostMapping(value = "/register/complete")
+    private UserRegisterDTO completeRegisterWithMeil(@RequestBody CompleteRegisterDTO completeRegister,HttpSession session)throws Exception {
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        validateKey(user.getSecureCode(), completeRegister.getSecureCode());
+
         return new UserRegisterDTO(user.getId(),user.getUsername(),user.getFirstName(),
                 user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
 
-//    @PostMapping(value = "/register/complete")
-//    private UserRegisterDTO completeRegisterWithMeil(User user,HttpSession session)throws BaseException {
-//        if(user.getSecureCode() == ){
-//            userRepository.save(user);
-//            session.setAttribute("User", user);
-//            session.setAttribute("Username", user.getUsername());
-//            return new UserRegisterDTO(user.getId(),user.getUsername(),user.getFirstName(),
-//                    user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
-//
-//        }
-//        throw new BaseException("wywedohte greshen kod. Opitajte pak");
-//    }
+    private void validateKey(String key, String verifyKey) throws BaseException{
+        if((key == null || verifyKey ==null)||(key.isEmpty() || verifyKey.isEmpty())){
+            throw new BaseException("Invalid input code.");
+        }
+        if(!key.equals(verifyKey)){
+            throw new BaseException("You entered the wrong code. Try again later.");
+        }
+    }
+
 
     @PostMapping(value = "/login")
     public UserLoginDTO userLogin(@RequestBody LoginDTO loginDTO, HttpSession session) throws BaseException {
@@ -164,6 +188,7 @@ public class UserController extends BaseController {
             validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
             user.setPassword(editPasswordDTO.getNewPassword());
             userRepository.save(user);
+            session.invalidate();
         }
         else {
             throw new WrongPasswordInputException();

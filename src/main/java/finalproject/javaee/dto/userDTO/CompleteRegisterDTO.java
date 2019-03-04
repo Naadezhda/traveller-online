@@ -6,11 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
 public class CompleteRegisterDTO {
 
-    private long secureCode;
+    private String secureCode;
 }

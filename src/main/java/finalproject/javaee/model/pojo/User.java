@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.Cascade;
 
+import javax.crypto.SecretKey;
 import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.util.List;
@@ -36,8 +37,8 @@ public class User implements Comparable<User> {
     //TODO photo
     private String photo;
     private String gender;
-    @Transient
-    private long secureCode;
+//    @Transient
+    private String secureCode;
 
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(name = "relations",
