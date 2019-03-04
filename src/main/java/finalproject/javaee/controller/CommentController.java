@@ -1,19 +1,8 @@
 package finalproject.javaee.controller;
-
-import finalproject.javaee.dto.UserCommentDTO;
-import finalproject.javaee.model.pojo.Comment;
-import finalproject.javaee.model.pojo.Post;
-import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.CommentRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-
-import javax.servlet.http.HttpSession;
 
 public class CommentController extends BaseController{
 

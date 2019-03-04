@@ -1,11 +1,13 @@
 package finalproject.javaee.dto;
 
+import finalproject.javaee.dto.userDTO.UserDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
+import java.time.LocalDateTime;
+import java.util.Set;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,6 +17,9 @@ public class PostWithUserAndMediaDTO {
 
     private String username;
     private String photo;
-    private List<PostWithMediaURL> postsWithMedia;
+    private LocalDateTime date;
+    private PostWithMediaURL postWithMedia;
+    int numOfLikes;
+    Set<UserDTO> likes;
 
 }

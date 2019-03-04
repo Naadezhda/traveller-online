@@ -16,7 +16,5 @@ public class PostWithMediaURL {
 
     PostDTO post;
     List<Media> media;//up to 3 media
-    // int numOfLikes;
-    //Set<User> likes;
 
 }

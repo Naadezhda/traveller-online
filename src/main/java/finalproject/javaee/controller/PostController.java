@@ -1,9 +1,8 @@
 package finalproject.javaee.controller;
 
 import finalproject.javaee.dto.*;
-import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
+import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.MediaInBytesDTO;
-import finalproject.javaee.dto.userDTO.ViewUserRelationsDTO;
 import finalproject.javaee.model.dao.PostDAO;
 import finalproject.javaee.model.pojo.Comment;
 import finalproject.javaee.model.pojo.Media;
@@ -24,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -67,8 +67,8 @@ public class PostController extends BaseController {
             List<PostWithUserAndMediaDTO> postsByFollowingWithMedia = new ArrayList<>();
             for (ViewUserRelationsDTO u : users) {
                 List<Post> postsByFollowing = postRepository.findAllByUserIdAndCategoriesId(u.getId(), categoryId);
-                PostWithUserAndMediaDTO post = getPostsByUserWithMedia(u, postsByFollowing);
-                postsByFollowingWithMedia.add(post);
+                List<PostWithUserAndMediaDTO> postsByUserWithMedia = getPostsByUserWithMedia(u, postsByFollowing);
+                postsByFollowingWithMedia.addAll(postsByUserWithMedia);
             }
             return postsByFollowingWithMedia;
         }
@@ -131,10 +131,19 @@ public class PostController extends BaseController {
     }
 
     @PostMapping(value = "/newsfeed")
-    public List<PostWithUserAndMediaDTO> getAllOrderedByLikes(HttpSession session) throws NotLoggedException{
+    public List<PostWithUserAndMediaDTO> getAllOrderedByLikes(@RequestBody String filter, HttpSession session) throws NotLoggedException{
         userController.getLoggedUserByIdSession(session);
-        User user = ((User) (session.getAttribute("User")));
-        return getAllPostsByFollowings(user);
+        User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+        List<PostWithUserAndMediaDTO> posts = getAllPostsByFollowings(user);
+        switch(filter){
+            case "likes":
+               Collections.sort(posts, new PostsByLikesComparator());
+               break;
+            case "date":
+                Collections.sort(posts, new PostsByDateComparator());
+                break;
+        }
+        return posts;
     }
 
     public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) {
@@ -142,24 +151,58 @@ public class PostController extends BaseController {
         List<PostWithUserAndMediaDTO> allPostsByFollowings = new ArrayList<>();
         for (ViewUserRelationsDTO u : users) {
             List<Post> postsByFollowing = postRepository.findAllByUserId(u.getId());
-            PostWithUserAndMediaDTO post = getPostsByUserWithMedia(u, postsByFollowing);
-            allPostsByFollowings.add(post);
+            allPostsByFollowings.addAll(getPostsByUserWithMedia(u, postsByFollowing));
         }
         return allPostsByFollowings;
     }
 
-    public PostWithUserAndMediaDTO getPostsByUserWithMedia(ViewUserRelationsDTO u, List<Post> postsByFollowing) {
-        List<PostWithMediaURL> postWithMedia = new ArrayList<>();
+    public List<PostWithUserAndMediaDTO> getPostsByUserWithMedia(ViewUserRelationsDTO u, List<Post> postsByFollowing) {
         List<PostDTO> posts = new ArrayList<>();
+        List<PostWithUserAndMediaDTO> postsByUser = new ArrayList<>();
         for (Post p : postsByFollowing) {
-            posts.add(new PostDTO(p.getId(), p.getDescription(), p.getLocationId(), p.getCategoriesId(), p.getDate()));
-        }
-        for (PostDTO dto : posts) {
+            PostDTO dto = new PostDTO(p.getId(), p.getDescription(), p.getLocationId(), p.getCategoriesId());
+            posts.add(dto);
             List<Media> media = mediaRepository.findAllByPostId(dto.getId());
-            postWithMedia.add(new PostWithMediaURL(dto, media));
+            postsByUser.add(new PostWithUserAndMediaDTO(u.getUsername(), u.getPhoto(), p.getDate(), new PostWithMediaURL(dto, media), p.getUsersWhoLiked().size(), p.getUsersWhoLikedInDTO()));
         }
-        return new PostWithUserAndMediaDTO(u.getUsername(), u.getPhoto(), postWithMedia);
+        return postsByUser;
     }
+
+    @PostMapping(value = "/posts/{id}/like")
+    public void likePost(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        if(UserController.isLoggedIn(session)) {
+            User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+            Post post = findPostById(id);
+            if (!post.getUsersWhoLiked().contains(user)) {
+                post.getUsersWhoLiked().add(user);
+                user.getLikedPosts().add(post);
+                userRepository.save(user);
+            }
+            else{
+                throw new LikedPostException("Already liked this post.");
+            }
+        }
+        else throw new NotLoggedException();
+    }
+
+    @PostMapping(value = "/posts/{id}/dislike")
+    public void dislikePost(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        if(UserController.isLoggedIn(session)) {
+            User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+            Post post = findPostById(id);
+            if (post.getUsersWhoLiked().contains(user)) {
+                post.getUsersWhoLiked().remove(user);
+                user.getLikedPosts().remove(post);
+                postRepository.save(post);
+                userRepository.save(user);
+            }
+            else{
+                throw new NotLikedPostException("Not liked this post.");
+            }
+        }
+        else throw new NotLoggedException();
+    }
+
 
     @PostMapping(value = "/posts/{id}/comment")
     public UserCommentDTO postComment(@PathVariable("id") long id, @RequestBody String comment, HttpSession session) throws BaseException {

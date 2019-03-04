@@ -38,8 +38,7 @@ public class User implements Comparable<User> {
     private String gender;
     @Transient
     private long secureCode;
-
-
+    
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(name = "relations",
             joinColumns = @JoinColumn(name = "follower_id"),
@@ -67,11 +66,6 @@ public class User implements Comparable<User> {
             joinColumns = @JoinColumn(name = "user_id" , referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "comment_id", referencedColumnName = "id"))
     private Set<Comment> likedComments;
-
-    public void removeLikedComment(Comment comment) {
-        likedComments.remove(comment);
-        comment.getUsersWhoLiked().remove(this);
-    }
 
     public String getPassword() {
         return CryptWithMD5.crypt(password).trim();

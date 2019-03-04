@@ -1,4 +1,5 @@
 package finalproject.javaee.model.pojo;
+import finalproject.javaee.dto.userDTO.UserDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -6,7 +7,6 @@ import lombok.Setter;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @NoArgsConstructor
@@ -35,7 +35,8 @@ public class Post {
 
     public Post(String description) {
         this.description = description;
-        this.date = LocalDateTime.now();
+        //this.date = LocalDateTime.now();
+        date = LocalDateTime.now();
     }
 
     public Post(long userId, String description, long locationId,long categoriesId) {
@@ -44,5 +45,13 @@ public class Post {
         this.description = description;
         this.locationId = locationId;
         this.categoriesId = categoriesId;
+    }
+
+    public Set<UserDTO> getUsersWhoLikedInDTO(){
+        Set<UserDTO> usersWhoLikedInDTO = new HashSet<>();
+        for (User u : usersWhoLiked) {
+            usersWhoLikedInDTO.add(new UserDTO(u.getUsername(), u.getPhoto()));
+        }
+        return  usersWhoLikedInDTO;
     }
 }
