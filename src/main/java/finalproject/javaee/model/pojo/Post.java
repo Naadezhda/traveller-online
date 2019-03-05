@@ -1,4 +1,5 @@
 package finalproject.javaee.model.pojo;
+import finalproject.javaee.dto.PostDTO;
 import finalproject.javaee.dto.userDTO.UserDTO;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -53,5 +54,9 @@ public class Post {
             usersWhoLikedInDTO.add(new UserDTO(u.getUsername(), u.getPhoto()));
         }
         return  usersWhoLikedInDTO;
+    }
+
+    public PostDTO postToPostDTO(){
+        return new PostDTO(this.id, this.description, this.locationId, this.categoriesId);
     }
 }

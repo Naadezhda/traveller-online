@@ -1,5 +1,6 @@
 package finalproject.javaee.model.pojo;
 
+import finalproject.javaee.dto.MediaDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +25,9 @@ public class Media {
     public Media(long postId, String mediaUrl){
         this.postId = postId;
         this.mediaUrl = mediaUrl;
+    }
 
+    public MediaDTO mediaToMediaDTO(){
+        return new MediaDTO(this.getMediaUrl());
     }
 }
