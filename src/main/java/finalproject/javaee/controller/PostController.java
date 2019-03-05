@@ -1,6 +1,5 @@
 package finalproject.javaee.controller;
 
-import com.sun.tools.javac.code.Attribute;
 import finalproject.javaee.dto.*;
 import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.MediaInBytesDTO;
@@ -40,7 +39,7 @@ public class PostController extends BaseController {
     private PostDAO dao;
 
     @GetMapping(value = "/posts/users/{userId}")
-    public List<Post> getPostsByUserId(@PathVariable("userId") long id, HttpSession session) throws NotLoggedException {
+    public List<Post> getPostsByUserId(@PathVariable("userId") long id, HttpSession session) throws BaseException {
         userController.getLoggedUserByIdSession(session);
         List<Post> posts = dao.getPostsByUser(id);
         return posts;
@@ -61,7 +60,7 @@ public class PostController extends BaseController {
     }
 
     @GetMapping(value = "/newsfeed/categories/{category}")
-    public List<PostWithUserAndMediaDTO> getPostsByCategory(@PathVariable("category") int categoryId, HttpSession session) throws NotLoggedException{
+    public List<PostWithUserAndMediaDTO> getPostsByCategory(@PathVariable("category") int categoryId, HttpSession session) throws BaseException {
         if(UserController.isLoggedIn(session)) {
             User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
             List<ViewUserRelationsDTO> users = userController.getAllUserFollowing(user);
@@ -83,7 +82,7 @@ public class PostController extends BaseController {
     MediaRepository mediaRepository;
 
     @GetMapping(value = "/profile/users/{user}")
-    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws NotLoggedException, IOException{
+    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws BaseException, IOException{
         userController.getLoggedUserByIdSession(session);
         User u = userRepository.findById(user_id);
         String username = u.getUsername();
@@ -113,7 +112,7 @@ public class PostController extends BaseController {
     }
 
     @PostMapping(value = "/users/addPost")
-    public void addPost(@RequestBody PostAPostWithMediaDTO dto, HttpSession session) throws NotLoggedException {
+    public void addPost(@RequestBody PostAPostWithMediaDTO dto, HttpSession session) throws BaseException {
         userController.getLoggedUserByIdSession(session);
         User user = ((User) (session.getAttribute("User")));
         Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
@@ -123,7 +122,7 @@ public class PostController extends BaseController {
     }
 
     @GetMapping(value = "/newsfeed")
-    public List<PostWithUserAndMediaDTO> getAll(HttpSession session) throws NotLoggedException{
+    public List<PostWithUserAndMediaDTO> getAll(HttpSession session) throws BaseException {
         if(UserController.isLoggedIn(session)) {
             User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
             return getAllPostsByFollowings(user);
@@ -136,7 +135,7 @@ public class PostController extends BaseController {
     }
 
     @PostMapping(value = "/newsfeed")
-    public List<PostWithUserAndMediaDTO> getAllOrdered(@RequestBody Filter filter, HttpSession session) throws NotLoggedException{
+    public List<PostWithUserAndMediaDTO> getAllOrdered(@RequestBody Filter filter, HttpSession session) throws BaseException {
         userController.getLoggedUserByIdSession(session);
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         List<PostWithUserAndMediaDTO> posts = getAllPostsByFollowings(user);

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
@@ -65,5 +67,13 @@ public abstract class BaseController {
         if (session.isNew() && session.getAttribute("Username") == null){
             throw new NotLoggedException();
         }
+    }
+
+    protected String key() throws Exception{
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(128);
+        SecretKey secretKey = keyGenerator.generateKey();
+        String secureCode = secretKey.toString();
+        return secureCode.substring(secureCode.length()-8,secureCode.length());
     }
 }

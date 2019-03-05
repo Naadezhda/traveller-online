@@ -37,8 +37,8 @@ public class User implements Comparable<User> {
     //TODO photo
     private String photo;
     private String gender;
-//    @Transient
     private String secureCode;
+    private boolean isCompleted;
 
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(name = "relations",
@@ -88,5 +88,6 @@ public class User implements Comparable<User> {
     public int compareTo(User o) {
         return (int)(this.getId() - o.getId());
     }
+
 }
 

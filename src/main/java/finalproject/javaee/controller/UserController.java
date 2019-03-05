@@ -1,10 +1,10 @@
 package finalproject.javaee.controller;
 
+import finalproject.javaee.dto.MessageDTO;
 import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.CryptWithMD5;
 import finalproject.javaee.model.util.MailUtil;
 import finalproject.javaee.model.util.exceptions.*;
 import finalproject.javaee.model.util.exceptions.usersExceptions.*;
@@ -14,8 +14,6 @@ import finalproject.javaee.model.util.exceptions.usersRegistrationExcepions.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpSession;
@@ -33,7 +31,7 @@ public class UserController extends BaseController {
     private PostController postController;
 
     @PostMapping(value = "/register")
-    public void userRegistration(@RequestBody User user, HttpSession session) throws Exception {
+    public MessageDTO userRegistration(@RequestBody User user, HttpSession session) throws Exception {
         validateUsername(user.getUsername());
         validatePassword(user.getPassword(),user.getVerifyPassword());
 
@@ -47,56 +45,59 @@ public class UserController extends BaseController {
         validateGender(user.getGender());
 
         user.setSecureCode(key());
-        String key = user.getSecureCode();
+        String secureCode = user.getSecureCode();
+
+        userRepository.save(user);
+        session.setAttribute("User", user);
+        session.setAttribute("Username", user.getUsername());
 
         new Thread(()-> {
             try {
 
-                MailUtil.sendMail("nadejdab29@gmail.bg", user.getEmail(), "Confirm registration by email.",
-                        "To complete your registration, enter the following code  " + key + " ");
+                MailUtil.sendMail("ittalentsX@gmail.com", user.getEmail(), "Confirm registration by email.",
+                        "Complete your registration, enter the following code" +
+                                " http://localhost:7777/register/" + user.getId() + "/" + secureCode);
             } catch (Exception e) {
                 logger.error(e.getMessage());
             }
         }).start();
-        userRepository.save(user);
-        session.setAttribute("User", user);
-        session.setAttribute("Username", user.getUsername());
+
+        return new MessageDTO("Registration success.We have sent you email to " + user.getEmail() + "."+
+                "Please click the link in that message to activate your account!");
+
     }
 
-    private String key() throws Exception{
-        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-        keyGenerator.init(128);
-        SecretKey secretKey = keyGenerator.generateKey();
-        return secretKey.toString();
-    }
-
-
-    @PostMapping(value = "/register/complete")
-    private UserRegisterDTO completeRegisterWithMeil(@RequestBody CompleteRegisterDTO completeRegister,HttpSession session)throws Exception {
-        User user = userRepository.findById(getLoggedUserByIdSession(session));
-        validateKey(user.getSecureCode(), completeRegister.getSecureCode());
-
-        return new UserRegisterDTO(user.getId(),user.getUsername(),user.getFirstName(),
+    @RequestMapping(value = "/register/{userId}/{secureCode}")
+    private UserInformationDTO completeRegister(@PathVariable("secureCode") String secureCode,
+                                                @PathVariable("userId") long userId,
+                                                HttpSession session)throws Exception {
+        User user = userRepository.findById(userId);
+        if(user.isCompleted()) {
+            throw new RegistrationException("Registration is already confirmed.");
+        }
+        if(userRepository.existsById(userId)) {
+            validateKey(user.getSecureCode(), secureCode);
+            user.setCompleted(true);
+            userRepository.save(user);
+            session.setAttribute("User", user);
+            session.setAttribute("Username", user.getUsername());
+        }else {
+            throw new UserExistException();
+        }
+        return new UserInformationDTO(user.getId(),user.getUsername(),user.getFirstName(),
                 user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
-
-    private void validateKey(String key, String verifyKey) throws BaseException{
-        if((key == null || verifyKey ==null)||(key.isEmpty() || verifyKey.isEmpty())){
-            throw new BaseException("Invalid input code.");
-        }
-        if(!key.equals(verifyKey)){
-            throw new BaseException("You entered the wrong code. Try again later.");
-        }
-    }
-
 
     @PostMapping(value = "/login")
     public UserLoginDTO userLogin(@RequestBody LoginDTO loginDTO, HttpSession session) throws BaseException {
         User user = userRepository.findByUsername(loginDTO.getUsername());
         if (!isLoggedIn(session)) {
-            validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
-            session.setAttribute("User", user);
-            session.setAttribute("Username", user.getUsername());
+            if(user.isCompleted()) {
+                validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
+                session.setAttribute("User", user);
+                session.setAttribute("Username", user.getUsername());
+            }else throw new BaseException("Ne ste potwyrdili reg");
+            //Todo exception
         } else {
             throw new UserLoggedInException();
         }
@@ -105,20 +106,20 @@ public class UserController extends BaseController {
     }
 
     @PostMapping(value = "/logout")
-    public void userLogout(HttpSession session) throws BaseException {
+    public MessageDTO userLogout(HttpSession session) throws BaseException {
         if (!isLoggedIn(session)) {
             throw new UserLoggedOutException();
         }
         session.invalidate();
+        return new MessageDTO("Logout successful.");
     }
 
     /* ************* Follow and Unfollow ************* */
 
     @GetMapping(value = "/follow/{id}")
-    public void userFollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
+    public MessageDTO userFollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         User followingUser = userRepository.findById(id);
-        validateisLoggedIn(session);
         if (userRepository.existsById(id)) {
             if (!user.getFollowing().contains(followingUser)) {
                 followingUser.getFollower().add(user);
@@ -130,13 +131,13 @@ public class UserController extends BaseController {
         } else {
             throw new UserExistException();
         }
+        return new MessageDTO(user.getUsername() + " follow " + followingUser.getUsername() + ".");
     }
 
     @DeleteMapping(value = "/unfollow/{id}")
-    public void userUnfollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
+    public MessageDTO userUnfollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         User unfollowingUser = userRepository.findById(id);
-        validateisLoggedIn(session);
         if (userRepository.existsById(id)) {
             if (user.getFollowing().contains(unfollowingUser)) {
                 unfollowingUser.getFollower().remove(user);
@@ -148,6 +149,7 @@ public class UserController extends BaseController {
         } else {
             throw new UserExistException();
         }
+        return new MessageDTO(user.getUsername() + " unfollow " + unfollowingUser.getUsername() + ".");
     }
 
     protected List<ViewUserRelationsDTO> getAllUserFollowers(User user) {
@@ -172,7 +174,6 @@ public class UserController extends BaseController {
     @GetMapping(value = "/profile")
     public ViewUserProfileDTO viewProfile(HttpSession session) throws Exception {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        validateisLoggedIn(session);
         return new ViewUserProfileDTO(user.getUsername(),user.getPhoto(),
                 postController.getAllUserPosts(getLoggedUserByIdSession(session)).size(),postController.getAllUserPosts(getLoggedUserByIdSession(session)),
                 getAllUserFollowing(user).size(),getAllUserFollowing(user),
@@ -180,9 +181,8 @@ public class UserController extends BaseController {
     }
 
     @PutMapping(value = "/profile/edit/password")
-    public void editPassword(@RequestBody EditPasswordDTO editPasswordDTO, HttpSession session) throws BaseException{
+    public MessageDTO editPassword(@RequestBody EditPasswordDTO editPasswordDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        validateisLoggedIn(session);
         if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
 //        if(editPasswordDTO.getOldPassword().equals(CryptWithMD5.crypt(user.getPassword()))) {
             validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
@@ -193,12 +193,12 @@ public class UserController extends BaseController {
         else {
             throw new WrongPasswordInputException();
         }
+        return new MessageDTO("Password changed successfully.");
     }
 
     @PutMapping(value = "/profile/edit/email")
-    public void editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session)throws BaseException{
+    public MessageDTO editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session)throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        validateisLoggedIn(session);
 //            if(editEmailDTO.getPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
         if(editEmailDTO.getPassword().equals(user.getPassword())){
             validateEmail(editEmailDTO.getNewEmail());
@@ -208,30 +208,30 @@ public class UserController extends BaseController {
         else{
             throw new WrongPasswordInputException();
         }
+        return new MessageDTO("Email changed successfully.");
     }
 
     @PutMapping(value = "profile/edit/firstName")
-    public void editFirstName(@RequestBody EditFirstNameDTO editFirstNameDTO, HttpSession session) throws BaseException{
+    public MessageDTO editFirstName(@RequestBody EditFirstNameDTO editFirstNameDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        validateisLoggedIn(session);
         validateFirstName(editFirstNameDTO.getNewFirstName());
         user.setFirstName(editFirstNameDTO.getNewFirstName());
         userRepository.save(user);
+        return new MessageDTO("First name changed successfully.");
     }
 
     @PutMapping(value = "/profile/edit/lastName")
-    public void editLastName(@RequestBody EditLastNameDTO editLastNameDTO, HttpSession session) throws BaseException{
+    public MessageDTO editLastName(@RequestBody EditLastNameDTO editLastNameDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        validateisLoggedIn(session);
         validateLastName(editLastNameDTO.getNewLastName());
         user.setLastName(editLastNameDTO.getNewLastName());
         userRepository.save(user);
+        return new MessageDTO("Last name changed successfully.");
     }
 
     @DeleteMapping(value = "/profile/edit/delete")
-    public void deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws BaseException{
+    public UserInformationDTO deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        validateisLoggedIn(session);
 //            if(deleteUserProfileDTO.getConfirmPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
         if(deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())){
             for(ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
@@ -243,12 +243,20 @@ public class UserController extends BaseController {
         else{
             throw new WrongPasswordInputException();
         }
+        return new UserInformationDTO(user.getId(),user.getUsername(),user.getFirstName(),
+                user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
 
     /* ************* Validations ************* */
 
     public static boolean isLoggedIn(HttpSession session){
         return (!session.isNew() && session.getAttribute("Username") != null);
+    }
+
+    private void validateKey(String key, String verifyKey) throws BaseException{
+        if(!key.equals(verifyKey)){
+            throw new BaseException("Entered wrong code.");
+        }
     }
 
     private void validateUsername(String username)throws RegistrationException {
@@ -316,12 +324,15 @@ public class UserController extends BaseController {
         }
     }
 
-    protected long getLoggedUserByIdSession(HttpSession session)throws NotLoggedException {
-        User user = ((User)(session.getAttribute("User")));
-        if(isLoggedIn(session) || user != null){
-            return  ((User)(session.getAttribute("User"))).getId();
-        }
-        throw new NotLoggedException();
+    protected long getLoggedUserByIdSession(HttpSession session)throws BaseException {
+        User user = ((User) (session.getAttribute("User")));
+        if (isLoggedIn(session) || user != null) {
+            if (user.isCompleted()) {
+                return ((User) (session.getAttribute("User"))).getId();
+            } else {
+                throw new BaseException("Account is not activated.");
+            }
+        }else throw new NotLoggedException();
     }
 
     protected void validateIfUserExist(long userId)throws UserExistException {

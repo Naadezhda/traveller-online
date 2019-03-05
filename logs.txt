@@ -1,0 +1,4 @@
+[ERROR] 2019-03-05 18:53:37,321 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:53) - Wrong username or password!
+[ERROR] 2019-03-05 18:53:52,581 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:53) - User already tagged in the post.
+[ERROR] 2019-03-05 18:54:54,681 finalproject.javaee.controller.BaseController.handleOtherErrors(BaseController.java:61) - Could not write JSON: String to encript cannot be null or zero length.; nested exception is com.fasterxml.jackson.databind.JsonMappingException: String to encript cannot be null or zero length. (through reference chain: java.util.ArrayList[0]->finalproject.javaee.model.pojo.Post["tagUser"]->org.hibernate.collection.internal.PersistentSet[0]->finalproject.javaee.model.pojo.User["verifyPassword"])
+[ERROR] 2019-03-05 18:55:25,365 finalproject.javaee.controller.BaseController.handleOtherErrors(BaseController.java:61) - more.png
