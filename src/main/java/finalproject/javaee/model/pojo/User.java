@@ -37,7 +37,7 @@ public class User implements Comparable<User> {
     //TODO photo
     private String photo;
     private String gender;
-    private long secureCode;
+    private String secureCode;
     private boolean isCompleted;
 
     @ManyToMany(cascade = {CascadeType.ALL})

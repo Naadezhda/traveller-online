@@ -9,7 +9,9 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
+import finalproject.javaee.model.util.exceptions.BaseException;
 import finalproject.javaee.model.util.exceptions.usersExceptions.NotLoggedException;
+import finalproject.javaee.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,23 +24,14 @@ import java.util.List;
 @RestController
 public class SearchController extends BaseController {
 
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    UserController userController;
-
-    @Autowired
-    PostRepository postRepository;
-
-    @Autowired
-    MediaRepository mediaRepository;
-
-    @Autowired
-    PostController postController;
+    @Autowired private UserRepository userRepository;
+    @Autowired private UserController userController;
+    @Autowired private PostRepository postRepository;
+    @Autowired private MediaRepository mediaRepository;
+    @Autowired private UserService userService;
 
     @GetMapping(value = "/search/profile/{username}")
-    public ViewUserProfileDTO viewProfile(@PathVariable String username, HttpSession session) throws NotLoggedException {
+    public ViewUserProfileDTO viewProfile(@PathVariable String username, HttpSession session) throws BaseException {
         userController.getLoggedUserByIdSession(session);
         User u = userRepository.findByUsername(username);
         List<Post> posts = postRepository.findAllByUserId(u.getId());
@@ -47,8 +40,8 @@ public class SearchController extends BaseController {
             postsWithMedia.add(postToPostWithMediaDTO(p));
         }
         return new ViewUserProfileDTO(u.getUsername(), u.getPhoto(),
-                userController.getAllUserFollowing(u),
-                userController.getAllUserFollowers(u),
+                userService.getAllUserFollowing(u),
+                userService.getAllUserFollowers(u),
                 postsWithMedia);
     }
 

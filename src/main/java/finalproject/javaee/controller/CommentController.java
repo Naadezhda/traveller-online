@@ -6,17 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 public class CommentController extends BaseController{
 
-    @Autowired
-    CommentRepository commentRepository;
-
-    @Autowired
-    UserRepository userRepository;
-
-    @Autowired
-    PostRepository postRepository;
-
-    @Autowired
-    UserController userController;
+    @Autowired private CommentRepository commentRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PostRepository postRepository;
+    @Autowired private UserController userController;
 
     /*@PostMapping(value = "/posts/{id}/comment")
     public UserCommentDTO postComment(@PathVariable("id") long id, @RequestBody String comment, HttpSession session) throws BaseException {

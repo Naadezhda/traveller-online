@@ -25,15 +25,12 @@ import java.util.List;
 @RestController
 public class PostController extends BaseController {
 
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    UserController userController;
-    @Autowired
-    PostService postService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private UserController userController;
+    @Autowired private PostService postService;
 
     @GetMapping(value = "/posts/users/{userId}")
-    public ViewUserProfileDTO getProfileByUserId(@PathVariable("userId") long id, HttpSession session) throws NotLoggedException {
+    public ViewUserProfileDTO getProfileByUserId(@PathVariable("userId") long id, HttpSession session) throws BaseException {
         userController.getLoggedUserByIdSession(session);
         return postService.viewProfile(id);
     }
@@ -45,13 +42,13 @@ public class PostController extends BaseController {
     }
 
     @GetMapping(value = "/newsfeed/categories/{category}")
-    public List<PostWithUserAndMediaDTO> getPostsByCategory(@PathVariable("category") int categoryId, HttpSession session) throws NotLoggedException {
+    public List<PostWithUserAndMediaDTO> getPostsByCategory(@PathVariable("category") int categoryId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.getAllPostsByCategory(user, categoryId);
     }
 
     @GetMapping(value = "/profile/users/{user}")
-    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws NotLoggedException {
+    public ViewUserProfileDTO getUserProfile(@PathVariable("user") long user_id, HttpSession session) throws BaseException {
         userController.getLoggedUserByIdSession(session);
         User user = userRepository.findById(user_id);
         return postService.viewUserProfile(user);
@@ -69,7 +66,7 @@ public class PostController extends BaseController {
     }
 
     @GetMapping(value = "/newsfeed")
-    public List<PostWithUserAndMediaDTO> getAll(HttpSession session) throws NotLoggedException {
+    public List<PostWithUserAndMediaDTO> getAll(HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.getAllPostsByFollowings(user);
     }
@@ -79,7 +76,7 @@ public class PostController extends BaseController {
     }
 
     @PostMapping(value = "/newsfeed")
-    public List<PostWithUserAndMediaDTO> getAllOrdered(@RequestBody Filter filter, HttpSession session) throws NotLoggedException {
+    public List<PostWithUserAndMediaDTO> getAllOrdered(@RequestBody Filter filter, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         List<PostWithUserAndMediaDTO> posts = postService.getAllPostsByFollowings(user);
         switch (filter) {
@@ -106,7 +103,7 @@ public class PostController extends BaseController {
     }
 
     @PostMapping(value = "/posts/{id}/comment")
-    public UserCommentDTO postComment(@PathVariable("id") long id, @RequestBody String comment, HttpSession session) throws NotLoggedException {
+    public UserCommentDTO postComment(@PathVariable("id") long id, @RequestBody String comment, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.writeComment(user, id, comment);
     }
