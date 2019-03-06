@@ -1,3 +1,0 @@
-[ERROR] 2019-03-06 17:22:13,172 finalproject.javaee.controller.BaseController.handleNotLogged(BaseController.java:29) - You are not logged!
-[ERROR] 2019-03-06 17:22:26,663 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:53) - Ne ste potwyrdili reg
-[ERROR] 2019-03-06 17:22:41,658 finalproject.javaee.controller.BaseController.handleNotLogged(BaseController.java:29) - You are not logged!

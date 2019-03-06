@@ -34,7 +34,7 @@ public class UserController extends BaseController {
         User user = userRepository.findById(userId);
         session.setAttribute("User", user);
         session.setAttribute("Username", user.getUsername());
-        return userService.compete(user,secureCode,userId);
+        return userService.complete(user,secureCode,userId);
     }
 
     @PostMapping(value = "/login")
@@ -45,7 +45,7 @@ public class UserController extends BaseController {
                 userService.validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
                 session.setAttribute("User", user);
                 session.setAttribute("Username", user.getUsername());
-            }else throw new BaseException("Ne ste potwyrdili reg");//Todo exception
+            }else throw new BaseException("Verify email address.");
         } else {
             throw new UserLoggedInException();
         }

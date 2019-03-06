@@ -11,8 +11,6 @@ import lombok.Setter;
 @Getter
 public class MediaDTO {
 
-
-    private String mediaURI;
-
+    private String mediaUri;
 
 }

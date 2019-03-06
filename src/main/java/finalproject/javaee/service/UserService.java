@@ -64,7 +64,7 @@ public class UserService {
                 "Please click the link in that message to activate your account!");
     }
 
-    public UserInformationDTO compete(User user, String secureCode, long id) throws BaseException{
+    public UserInformationDTO complete(User user, String secureCode, long id) throws BaseException{
         if(user.isCompleted()) {
             throw new RegistrationException("Registration is already confirmed.");
         }
