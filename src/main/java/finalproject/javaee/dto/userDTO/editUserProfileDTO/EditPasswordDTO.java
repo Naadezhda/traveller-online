@@ -19,16 +19,14 @@ public class EditPasswordDTO {
     public String getOldPassword() {
         return CryptWithMD5.crypt(oldPassword).trim();
     }
-
     public void setOldPassword(String oldPassword) {
         this.oldPassword = CryptWithMD5.crypt(oldPassword).trim();
     }
 
-    public String getNewPassword() {
-        return CryptWithMD5.crypt(newPassword).trim();
-    }
-
-    public String getVerifyNewPassword() {
-        return CryptWithMD5.crypt(verifyNewPassword).trim();
-    }
+//    public String getNewPassword() {
+//        return (newPassword).trim();
+//    }
+//    public String getVerifyNewPassword() {
+//        return (verifyNewPassword).trim();
+//    }
 }

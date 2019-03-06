@@ -4,24 +4,16 @@ import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.CryptWithMD5;
-import finalproject.javaee.model.util.MailUtil;
 import finalproject.javaee.model.util.exceptions.*;
 import finalproject.javaee.model.util.exceptions.usersExceptions.*;
-import finalproject.javaee.model.util.exceptions.usersExceptions.InvalidLoginException;
 import finalproject.javaee.model.util.exceptions.usersExceptions.UserLoggedInException;
-import finalproject.javaee.model.util.exceptions.usersRegistrationExcepions.*;
 import finalproject.javaee.service.PostService;
 import finalproject.javaee.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.servlet.http.HttpSession;
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 public class UserController extends BaseController {
@@ -34,7 +26,7 @@ public class UserController extends BaseController {
     UserService userService;
 
     @PostMapping(value = "/register")
-    public UserRegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws BaseException, MessagingException {
+    public UserInformationDTO userRegistration(@RequestBody User user, HttpSession session) throws BaseException, MessagingException {
         session.setAttribute("User", user);
         session.setAttribute("Username", user.getUsername());
         return userService.register(user);

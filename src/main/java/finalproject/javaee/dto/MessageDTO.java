@@ -2,15 +2,12 @@ package finalproject.javaee.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
 @AllArgsConstructor
-@Setter
 @Getter
-public class MediaUploadDTO {
+@Setter
+public class MessageDTO {
 
-    private String mediaUrl;
-
+    private String message;
 }

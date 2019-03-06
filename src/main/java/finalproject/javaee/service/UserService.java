@@ -25,7 +25,7 @@ public class UserService {
     @Autowired
     PostService postService;
 
-    public UserRegisterDTO register(User user) throws BaseException, MessagingException {
+    public UserInformationDTO register(User user) throws BaseException, MessagingException {
         validateUsername(user.getUsername());
         validatePassword(user.getPassword(),user.getVerifyPassword());
 
@@ -44,7 +44,7 @@ public class UserService {
                 "To complete your registration, enter the following code  " + code + " ");
 
         userRepository.save(user);
-        return new UserRegisterDTO(user.getId(),user.getUsername(),user.getFirstName(),
+        return new UserInformationDTO(user.getId(),user.getUsername(),user.getFirstName(),
                 user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
 

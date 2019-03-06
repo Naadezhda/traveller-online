@@ -1,5 +1,6 @@
 package finalproject.javaee.model.pojo;
 
+import finalproject.javaee.dto.userDTO.UserDTO;
 import finalproject.javaee.model.util.CryptWithMD5;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,8 +37,8 @@ public class User implements Comparable<User> {
     //TODO photo
     private String photo;
     private String gender;
-    @Transient
     private long secureCode;
+    private boolean isCompleted;
 
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(name = "relations",
@@ -87,5 +88,10 @@ public class User implements Comparable<User> {
     public int compareTo(User o) {
         return (int)(this.getId() - o.getId());
     }
+
+    public UserDTO userToUserDTO(){
+        return new UserDTO(this.username, this.photo);
+    }
+
 }
 

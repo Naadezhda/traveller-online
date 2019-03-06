@@ -1,7 +1,11 @@
 package finalproject.javaee.model.util;
 
+import javax.crypto.Cipher;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 public class CryptWithMD5 {
         private static MessageDigest digester;
@@ -32,4 +36,5 @@ public class CryptWithMD5 {
             }
             return hexString.toString();
         }
+
 }

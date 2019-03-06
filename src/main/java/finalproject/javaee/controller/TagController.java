@@ -1,5 +1,6 @@
 package finalproject.javaee.controller;
 
+import finalproject.javaee.dto.MessageDTO;
 import finalproject.javaee.model.pojo.Post;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.PostRepository;
@@ -27,7 +28,7 @@ public class TagController extends BaseController {
     private UserController userController;
 
     @GetMapping(value = "/tags/posts/{postId}/users/{userId}")
-    public void addTagUser(@PathVariable("postId") long postId, @PathVariable("userId") long userId, HttpSession session) throws BaseException {
+    public MessageDTO addTagUser(@PathVariable("postId") long postId, @PathVariable("userId") long userId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userId);
         Post post = postRepository.findById(postId);
 
@@ -44,10 +45,11 @@ public class TagController extends BaseController {
         }else {
             throw new NotLoggedException();
         }
+        return new MessageDTO(user.getUsername() + " is tagged in post with id " + post.getId());
     }
 
     @DeleteMapping(value = "/tags/posts/{postId}/users/{userId}")
-    public void removeTagUser(@PathVariable("postId") long postId, @PathVariable("userId") long userId, HttpSession session) throws BaseException {
+    public MessageDTO removeTagUser(@PathVariable("postId") long postId, @PathVariable("userId") long userId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userId);
         Post post = postRepository.findById(postId);
 
@@ -64,6 +66,7 @@ public class TagController extends BaseController {
         }else {
             throw new NotLoggedException();
         }
+        return new MessageDTO(user.getUsername() + " is removed from tag in post with id " + post.getId());
     }
 
 

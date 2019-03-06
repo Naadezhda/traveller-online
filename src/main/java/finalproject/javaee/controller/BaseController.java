@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
 import javax.servlet.http.HttpSession;
 import java.time.LocalDateTime;
 
@@ -24,7 +26,7 @@ public abstract class BaseController {
     @ExceptionHandler({NotLoggedException.class})
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)
     public ErrorMessage handleNotLogged(NotLoggedException n){
-        logger.error(n.getMessage(),n);
+        logger.error(n.getMessage());
         ErrorMessage message = new ErrorMessage(n.getMessage(), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
         return message;
     }
@@ -32,7 +34,7 @@ public abstract class BaseController {
     @ExceptionHandler({RegistrationException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorMessage handleRegistrationErrors(RegistrationException r){
-        logger.error(r.getMessage(),r);
+        logger.error(r.getMessage());
         ErrorMessage message = new ErrorMessage(r.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
         return message;
     }
@@ -40,7 +42,7 @@ public abstract class BaseController {
     @ExceptionHandler({ExistException.class})
     @ResponseStatus(value = HttpStatus.NOT_FOUND)
     public ErrorMessage handleRegistrationErrors(ExistException x){
-        logger.error(x.getMessage(),x);
+        logger.error(x.getMessage());
         ErrorMessage message = new ErrorMessage(x.getMessage(), HttpStatus.NOT_FOUND.value(), LocalDateTime.now());
         return message;
     }
@@ -48,7 +50,7 @@ public abstract class BaseController {
     @ExceptionHandler({BaseException.class})
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     public ErrorMessage handleMyErrors(BaseException b){
-        logger.error(b.getMessage(),b);
+        logger.error(b.getMessage());
         ErrorMessage message = new ErrorMessage(b.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
         return message;
     }
@@ -56,7 +58,7 @@ public abstract class BaseController {
     @ExceptionHandler({Exception.class})
     @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorMessage handleOtherErrors(Exception e){
-        logger.error(e.getMessage(),e);
+        logger.error(e.getMessage());
         ErrorMessage message = new ErrorMessage(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), LocalDateTime.now());
         return message;
     }
@@ -65,5 +67,13 @@ public abstract class BaseController {
         if (session.isNew() && session.getAttribute("Username") == null){
             throw new NotLoggedException();
         }
+    }
+
+    protected String key() throws Exception{
+        KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
+        keyGenerator.init(128);
+        SecretKey secretKey = keyGenerator.generateKey();
+        String secureCode = secretKey.toString();
+        return secureCode.substring(secureCode.length()-8,secureCode.length());
     }
 }
