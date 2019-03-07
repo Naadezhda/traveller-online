@@ -32,7 +32,7 @@ public class UserService {
     @Autowired
     PostService postService;
 
-    public MessageDTO register(User user) throws Exception {
+    public MessageDTO register(User user) throws Exception{
         validateUsername(user.getUsername());
         validatePassword(user.getPassword(), user.getVerifyPassword());
 //        validatePassword(CryptWithMD5.crypt(user.getPassword()),CryptWithMD5.crypt(user.getVerifyPassword()));
@@ -45,7 +45,8 @@ public class UserService {
         user.setSecureCode(BaseController.key());
         String secureCode = user.getSecureCode();
         userRepository.save(user);
-        new Thread(() -> {
+
+        new Thread(()-> {
             try {
                 MailUtil.sendMail("ittalentsX@gmail.com", user.getEmail(), "Confirm registration by email.",
                         "Complete your registration, enter the following code" +
@@ -54,6 +55,7 @@ public class UserService {
                 logger.error(e.getMessage());
             }
         }).start();
+
         return new MessageDTO("Registration success.We have sent you email to " + user.getEmail() + "." +
                 "Please click the link in that message to activate your account!");
     }
@@ -130,8 +132,8 @@ public class UserService {
                 postService.getAllUserPosts(user.getId()));
     }
 
-    public MessageDTO editPassword(User user, EditPasswordDTO editPasswordDTO) throws BaseException {
-        if (editPasswordDTO.getOldPassword().equals(user.getPassword())) {
+    public MessageDTO editPassword(User user, EditPasswordDTO editPasswordDTO) throws BaseException{
+        if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
 //        if(editPasswordDTO.getOldPassword().equals(CryptWithMD5.crypt(user.getPassword()))) {
             validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
             user.setPassword(editPasswordDTO.getNewPassword());
@@ -154,21 +156,21 @@ public class UserService {
         return new MessageDTO("Email changed successfully.");
     }
 
-    public MessageDTO editFirstName(User user, EditFirstNameDTO editFirstNameDTO) throws RegistrationException {
+    public MessageDTO editFirstName(User user, EditFirstNameDTO editFirstNameDTO) throws RegistrationException{
         validateFirstName(editFirstNameDTO.getNewFirstName());
         user.setFirstName(editFirstNameDTO.getNewFirstName());
         userRepository.save(user);
         return new MessageDTO("First name changed successfully.");
     }
 
-    public MessageDTO editLastName(User user, EditLastNameDTO editLastNameDTO) throws RegistrationException {
+    public MessageDTO editLastName(User user, EditLastNameDTO editLastNameDTO) throws RegistrationException{
         validateLastName(editLastNameDTO.getNewLastName());
         user.setLastName(editLastNameDTO.getNewLastName());
         userRepository.save(user);
         return new MessageDTO("Last name changed successfully.");
     }
 
-    public UserInformationDTO deleteUser(User user, DeleteUserProfileDTO deleteUserProfileDTO) throws BaseException {
+    public UserInformationDTO deleteUser(User user, DeleteUserProfileDTO deleteUserProfileDTO) throws BaseException{
 //      if(deleteUserProfileDTO.getConfirmPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
         if (deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())) {
             for (ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
@@ -179,8 +181,9 @@ public class UserService {
         } else {
             throw new WrongPasswordInputException();
         }
-        return new UserInformationDTO(user.getId(), user.getUsername(), user.getFirstName(),
-                user.getLastName(), user.getEmail(), user.getPhoto(), user.getGender());
+
+        return new UserInformationDTO(user.getId(),user.getUsername(),user.getFirstName(),
+                user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
 
     /* ************* Validations ************* */
@@ -190,8 +193,8 @@ public class UserService {
         }
     }
 
-    private void validateUsername(String username) throws RegistrationException {
-        if (username == null || username.isEmpty()) {
+    private void validateUsername(String username)throws RegistrationException {
+        if(username == null || username.isEmpty()){
             throw new InvalidUsernameException();
         }
         if (userRepository.findByUsername(username) != null) {
@@ -255,8 +258,8 @@ public class UserService {
         }
     }
 
-    public void validateIfUserExist(long userId) throws UserExistException {
-        if (!userRepository.existsById(userId)) {
+    public void validateIfUserExist(long userId)throws UserExistException {
+        if(!userRepository.existsById(userId)) {
             throw new UserExistException();
         }
     }

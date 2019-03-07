@@ -1,9 +1,10 @@
 package finalproject.javaee.controller;
 
 import finalproject.javaee.dto.MessageDTO;
-import finalproject.javaee.dto.userDTO.LoginDTO;
 import finalproject.javaee.dto.userDTO.UserInformationDTO;
 import finalproject.javaee.dto.userDTO.UserLoginDTO;
+import finalproject.javaee.dto.userDTO.*;
+import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceptions.BaseException;
@@ -24,7 +25,6 @@ public class UserController extends BaseController {
     private UserRepository userRepository;
     @Autowired
     private UserService userService;
-
 
     @PostMapping(value = "/register")
     public MessageDTO userRegistration(@RequestBody User user, HttpSession session) throws Exception {
@@ -47,11 +47,11 @@ public class UserController extends BaseController {
     public UserLoginDTO userLogin(@RequestBody LoginDTO loginDTO, HttpSession session) throws BaseException {
         User user = userRepository.findByUsername(loginDTO.getUsername());
         if (!isLoggedIn(session)) {
-            if (user.isCompleted()) {
+            if(user.isCompleted()) {
                 userService.validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
                 session.setAttribute("User", user);
                 session.setAttribute("Username", user.getUsername());
-            } else throw new BaseException("Verify email address.");
+            }else throw new BaseException("Verify email address.");
         } else {
             throw new UserLoggedInException();
         }
@@ -69,10 +69,57 @@ public class UserController extends BaseController {
     }
     /* ************* Follow and Unfollow ************* */
 
-    @GetMapping(value = "/follow/{id}")
+
+    @GetMapping(value = "/follow/{id}") //TODO return a message saying "You've followed successful"
     public MessageDTO userFollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         return userService.followUser(user, id);
+    }
+
+
+    @DeleteMapping(value = "/unfollow/{id}")
+    public MessageDTO userUnfollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        return userService.unfollowUser(user, id);
+    }
+
+    /* ************* Edit profile ************* */
+
+    @GetMapping(value = "/profile")
+    public ViewUserProfileDTO viewProfile(HttpSession session) throws Exception {
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        return userService.viewProfile(user);
+    }
+
+    @PutMapping(value = "/profile/edit/password")
+    public MessageDTO editPassword(@RequestBody EditPasswordDTO editPasswordDTO, HttpSession session) throws BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        return userService.editPassword(user, editPasswordDTO);
+    }
+
+    @PutMapping(value = "/profile/edit/email")
+    public MessageDTO editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session) throws BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        return userService.editEmail(user, editEmailDTO);
+    }
+
+    @PutMapping(value = "profile/edit/firstName")
+    public MessageDTO editFirstName(@RequestBody EditFirstNameDTO editFirstNameDTO, HttpSession session) throws BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        return userService.editFirstName(user, editFirstNameDTO);
+    }
+
+    @PutMapping(value = "/profile/edit/lastName")
+    public MessageDTO editLastName(@RequestBody EditLastNameDTO editLastNameDTO, HttpSession session) throws BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        return userService.editLastName(user, editLastNameDTO);
+    }
+
+    @DeleteMapping(value = "/profile/edit/delete")
+    public UserInformationDTO deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws BaseException{
+        User user = userRepository.findById(getLoggedUserByIdSession(session));
+        userLogout(session);
+        return userService.deleteUser(user, deleteUserProfileDTO);
     }
 
     public static boolean isLoggedIn(HttpSession session){
@@ -87,6 +134,6 @@ public class UserController extends BaseController {
             } else {
                 throw new BaseException("Account is not activated.");
             }
-        }else throw new NotLoggedException();
+        } else throw new NotLoggedException();
     }
 }

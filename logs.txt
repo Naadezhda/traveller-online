@@ -1,1 +1,0 @@
-[ERROR] 2019-03-07 12:53:52,579 finalproject.javaee.controller.BaseController.handleRegistrationErrors(BaseController.java:45) - There is no user with such id!

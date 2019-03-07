@@ -24,12 +24,9 @@ import java.util.List;
 @RestController
 public class PostController extends BaseController {
 
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    UserController userController;
-    @Autowired
-    PostService postService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private UserController userController;
+    @Autowired private PostService postService;
 
     @GetMapping(value = "/posts/users/{userId}")
     public ViewUserProfileDTO getProfileByUserId(@PathVariable("userId") long id, HttpSession session) throws BaseException {

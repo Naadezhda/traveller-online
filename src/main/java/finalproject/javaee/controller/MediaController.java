@@ -13,7 +13,6 @@ import finalproject.javaee.model.util.exceptions.postsExceptions.PostExistExcept
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-
 import javax.servlet.http.HttpSession;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,8 +23,6 @@ import java.util.Base64;
 @RestController
 public class MediaController extends BaseController {
 
-    public static final String MEDIA_DIR = "C:\\Users\\Vicky\\Desktop\\";
-
     @Autowired
     private MediaRepository mediaRepository;
     @Autowired
@@ -35,9 +32,11 @@ public class MediaController extends BaseController {
     @Autowired
     private PostRepository postRepository;
 
-    @PostMapping(value = "/media")
+    public static final String MEDIA_DIR = "C:\\Users\\Надежда\\Desktop\\Upload\\";
+
+    @PostMapping(value = "/images/users/photo")
     public MessageDTO uploadUserPhoto(@RequestBody MediaDTO dto, HttpSession session) throws Exception{
-        User user = (User)session.getAttribute("loggedUser");
+        User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
         String mediaUri = readFile(dto.getMediaUri(),fileName);
         user.setPhoto(mediaUri);
@@ -45,17 +44,8 @@ public class MediaController extends BaseController {
         return new MessageDTO("Upload successful.");
     }
 
-    @GetMapping(value = "/media/{name}", produces = "image/png")
-    public byte[] downloadImage(@PathVariable("name") String mediaName,HttpSession session) throws Exception {
-        validateisLoggedIn(session);
-        if(!mediaRepository.existsByMediaUrl(mediaName)) {
-            throw new BaseException("Image does not exist.");
-        }
-        return download(mediaName);
-    }
-
     @PostMapping(value = "/images/posts/{postId}/images")
-    public MessageDTO uploadPostsImages(@RequestBody MediaDTO dto,@PathVariable("postId") long postId, HttpSession session) throws Exception {
+    public MessageDTO uploadPostsImages(@RequestBody MediaDTO dto,@PathVariable("postId") long postId, HttpSession session) throws Exception{
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         if(!postRepository.existsById(postId)){
             throw new PostExistException();
@@ -83,6 +73,15 @@ public class MediaController extends BaseController {
         Media media = new Media(post.getId(), dto.getMediaUri());
         mediaRepository.save(media);
         return new MessageDTO("Upload video successful.");
+    }
+
+    @GetMapping(value = "/media/{name}", produces = "image/png")
+    public byte[] downloadImage(@PathVariable("name") String mediaName,HttpSession session) throws Exception {
+        validateisLoggedIn(session);
+        if(!mediaRepository.existsByMediaUrl(mediaName)) {
+            throw new BaseException("Image does not exist.");
+        }
+        return download(mediaName);
     }
 
     @GetMapping(value = "/video/{name}", produces = "video/mp4")

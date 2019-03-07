@@ -26,8 +26,6 @@ public class TagController extends BaseController {
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    private UserController userController;
-    @Autowired
     private UserService userService;
 
     @GetMapping(value = "/tags/posts/{postId}/users/{userId}")
