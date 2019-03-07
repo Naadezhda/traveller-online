@@ -35,7 +35,6 @@ public class User implements Comparable<User>, DtoConvertible<UserDTO> {
     private String firstName;
     private String lastName;
     private String email;
-    //TODO photo
     private String photo;
     private String gender;
     private String secureCode;
@@ -68,19 +67,6 @@ public class User implements Comparable<User>, DtoConvertible<UserDTO> {
             joinColumns = @JoinColumn(name = "user_id" , referencedColumnName = "id"),
             inverseJoinColumns = @JoinColumn(name = "comment_id", referencedColumnName = "id"))
     private Set<Comment> likedComments;
-
-//    public String getPassword() {
-//        return Crypt.hashPassword(password).trim();
-//    }
-
-//    public String getVerifyPassword() {
-//        return Crypt.hashPassword(verifyPassword).trim();
-//    }
-
-//    public void setPassword(String password) {
-//        this.password = Crypt.hashPassword(password).trim();
-//    }
-
 
     @Override
     public int compareTo(User o) {

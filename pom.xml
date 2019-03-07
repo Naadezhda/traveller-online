@@ -67,16 +67,6 @@
             <artifactId>jbcrypt</artifactId>
             <version>0.3m</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/org.springframework.security/spring-security-core -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-core</artifactId>
-            <version>5.1.4.RELEASE</version>
-        </dependency>
-
-
-
     </dependencies>
 
     <build>

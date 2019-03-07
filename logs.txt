@@ -1,0 +1,4 @@
+[ERROR] 2019-03-08 01:08:00,682 finalproject.javaee.controller.BaseController.handleRegistrationErrors(BaseController.java:36) - Post doesn't exist
+[ERROR] 2019-03-08 01:08:08,401 finalproject.javaee.controller.BaseController.handleRegistrationErrors(BaseController.java:36) - Cannot upload more than 1 video.
+[ERROR] 2019-03-08 01:08:14,606 finalproject.javaee.controller.BaseController.handleRegistrationErrors(BaseController.java:36) - Cannot upload more than 3 photos.
+[ERROR] 2019-03-08 01:08:22,121 finalproject.javaee.controller.BaseController.handleRegistrationErrors(BaseController.java:36) - Cannot upload more than 3 photos.

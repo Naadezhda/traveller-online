@@ -10,4 +10,5 @@ public interface MediaRepository extends JpaRepository<Media, Long> {
     List<Media> findAllByPostId(long id);
     boolean existsByMediaUrl(String mediaUrl);
 
+
 }

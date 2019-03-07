@@ -59,26 +59,11 @@ public class PostService {
 
     }
 
-    private boolean isValidNumberOfPhotos(List<String> photos) throws InvalidPostException{
-        if(photos.size() > 3){
-            throw new InvalidPostException("Cannot upload more than 3 photos.");
-        }
-        return true;
-    }
-
-    public AddPostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
+    public AddPostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto)  {
         Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
         postRepository.save(p);
-        List<String> media = dto.getMediaUri();
-        isValidNumberOfPhotos(media);
-        for (String s : media) {
-            Media m = new Media(p.getId(), s);
-            mediaRepository.save(m);
-        }
-        Media video = new Media(p.getId(), dto.getVideoUri());
-        mediaRepository.save(video);
         return new AddPostWithMediaDTO(dto.getDescription(), dto.getLocationId(),
-                dto.getCategoriesId(), media, dto.getVideoUri());
+                dto.getCategoriesId());
     }
 
     public List<PostWithMediaDTO> getAllUserPosts(Long id) throws BaseException {
@@ -193,6 +178,12 @@ public class PostService {
                 userService.getAllUserFollowing(u),
                 userService.getAllUserFollowers(u),
                 postsWithMedia);
+    }
+
+    protected void validateIfPostExist(long postId)throws BaseException {
+        if(!postRepository.existsById(postId)) {
+            throw new ExistException("Post doesn't exist");
+        }
     }
 
 }

@@ -16,7 +16,7 @@ public class AddPostWithMediaDTO {
     String description;
     long locationId;
     long categoriesId;
-    List<String> mediaUri;
-    String videoUri;
+//    List<String> mediaUri;
+//    String videoUri;
 
 }
