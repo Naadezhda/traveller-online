@@ -1,4 +1,4 @@
-package finalproject.javaee.dto;
+package finalproject.javaee.dto.pojoDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,8 +9,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Setter
 @Getter
-public class MediaInBytesDTO {
+public class CommentDTO {
 
-    byte[] mediaBytes;
+    private String username;
+    private String photo;
+    private String comment;
 
 }

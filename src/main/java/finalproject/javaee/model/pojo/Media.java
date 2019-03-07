@@ -1,6 +1,7 @@
 package finalproject.javaee.model.pojo;
 
-import finalproject.javaee.dto.MediaDTO;
+import finalproject.javaee.dto.pojoDTO.DtoConvertible;
+import finalproject.javaee.dto.pojoDTO.MediaDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,7 +15,7 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "media")
-public class Media {
+public class Media implements DtoConvertible<MediaDTO> {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -27,7 +28,8 @@ public class Media {
         this.mediaUrl = mediaUrl;
     }
 
-    public MediaDTO mediaToMediaDTO(){
+    @Override
+    public MediaDTO toDTO() {
         return new MediaDTO(this.getMediaUrl());
     }
 }

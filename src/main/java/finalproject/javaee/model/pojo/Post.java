@@ -1,9 +1,12 @@
 package finalproject.javaee.model.pojo;
-import finalproject.javaee.dto.PostDTO;
+import finalproject.javaee.dto.pojoDTO.DtoConvertible;
+import finalproject.javaee.dto.pojoDTO.PostDTO;
 import finalproject.javaee.dto.userDTO.UserDTO;
+import finalproject.javaee.model.repository.LocationRepository;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -15,7 +18,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "posts")
-public class Post {
+public class Post implements DtoConvertible<PostDTO> {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -56,7 +59,14 @@ public class Post {
         return  usersWhoLikedInDTO;
     }
 
-    public PostDTO postToPostDTO(){
-        return new PostDTO(this.id, this.description, this.locationId, this.categoriesId);
+    @Transient
+    @Autowired
+    LocationRepository locationRepository;
+
+    @Override
+    public PostDTO toDTO() {
+        Location location = locationRepository.findById(this.locationId);
+        return new PostDTO(this.id, this.description, location.toDTO(), this.categoriesId);
     }
+
 }

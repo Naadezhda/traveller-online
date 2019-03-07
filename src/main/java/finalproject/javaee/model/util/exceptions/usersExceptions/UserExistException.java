@@ -7,4 +7,8 @@ public class UserExistException extends ExistException {
     public UserExistException() {
         super("User does not exist!");
     }
+
+    public UserExistException(String message) {
+        super(message);
+    }
 }

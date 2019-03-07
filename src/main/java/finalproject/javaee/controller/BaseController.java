@@ -69,7 +69,7 @@ public abstract class BaseController {
         }
     }
 
-    protected String key() throws Exception{
+    public static String key() throws Exception{
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(128);
         SecretKey secretKey = keyGenerator.generateKey();

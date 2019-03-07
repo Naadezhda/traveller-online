@@ -1,4 +1,4 @@
-package finalproject.javaee.dto;
+package finalproject.javaee.dto.pojoDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,10 +7,11 @@ import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
-@Setter
 @Getter
-public class MediaDTO {
+@Setter
+public class CountryDTO {
 
-    private String mediaURI;
+    public long id;
+    public String countryName;
 
 }

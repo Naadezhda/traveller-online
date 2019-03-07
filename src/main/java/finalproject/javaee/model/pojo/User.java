@@ -1,5 +1,6 @@
 package finalproject.javaee.model.pojo;
 
+import finalproject.javaee.dto.pojoDTO.DtoConvertible;
 import finalproject.javaee.dto.userDTO.UserDTO;
 import finalproject.javaee.model.util.CryptWithMD5;
 import lombok.AllArgsConstructor;
@@ -19,7 +20,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "users")
-public class User implements Comparable<User> {
+public class User implements Comparable<User>, DtoConvertible<UserDTO> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,7 +38,7 @@ public class User implements Comparable<User> {
     //TODO photo
     private String photo;
     private String gender;
-    private long secureCode;
+    private String secureCode;
     private boolean isCompleted;
 
     @ManyToMany(cascade = {CascadeType.ALL})
@@ -89,7 +90,8 @@ public class User implements Comparable<User> {
         return (int)(this.getId() - o.getId());
     }
 
-    public UserDTO userToUserDTO(){
+    @Override
+    public UserDTO toDTO() {
         return new UserDTO(this.username, this.photo);
     }
 

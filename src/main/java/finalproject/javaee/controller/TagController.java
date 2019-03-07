@@ -9,6 +9,7 @@ import finalproject.javaee.model.util.exceptions.BaseException;
 import finalproject.javaee.model.util.exceptions.usersExceptions.TagException;
 import finalproject.javaee.model.util.exceptions.postsExceptions.PostExistException;
 import finalproject.javaee.model.util.exceptions.usersExceptions.NotLoggedException;
+import finalproject.javaee.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,6 +27,8 @@ public class TagController extends BaseController {
     private UserRepository userRepository;
     @Autowired
     private UserController userController;
+    @Autowired
+    private UserService userService;
 
     @GetMapping(value = "/tags/posts/{postId}/users/{userId}")
     public MessageDTO addTagUser(@PathVariable("postId") long postId, @PathVariable("userId") long userId, HttpSession session) throws BaseException {
@@ -34,7 +37,7 @@ public class TagController extends BaseController {
 
         if(UserController.isLoggedIn(session)){
             validateIfPostExist(postId);
-            userController.validateIfUserExist(userId);
+            userService.validateIfUserExist(userId);
             if(!(post.getTagUser().contains(user) && user.getTagPost().contains(post))){
                 post.getTagUser().add(user);
                 user.getTagPost().add(post);
@@ -55,7 +58,7 @@ public class TagController extends BaseController {
 
         if(UserController.isLoggedIn(session)){
             validateIfPostExist(postId);
-            userController.validateIfUserExist(userId);
+            userService.validateIfUserExist(userId);
             if(post.getTagUser().contains(user) && user.getTagPost().contains(post)){
                 post.getTagUser().remove(user);
                 user.getTagPost().remove(post);
