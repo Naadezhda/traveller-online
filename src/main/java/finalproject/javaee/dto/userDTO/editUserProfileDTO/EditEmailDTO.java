@@ -1,6 +1,5 @@
 package finalproject.javaee.dto.userDTO.editUserProfileDTO;
 
-import finalproject.javaee.model.util.CryptWithMD5;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,11 +17,4 @@ public class EditEmailDTO {
     private String password;
     private String newEmail;
 
-    public String getPassword() {
-        return CryptWithMD5.crypt(password).trim();
-    }
-
-    public void setPassword(String password) {
-        this.password = CryptWithMD5.crypt(password).trim();
-    }
 }

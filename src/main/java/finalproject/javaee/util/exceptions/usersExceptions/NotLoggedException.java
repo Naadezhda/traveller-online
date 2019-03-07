@@ -1,6 +1,6 @@
-package finalproject.javaee.model.util.exceptions.usersExceptions;
+package finalproject.javaee.util.exceptions.usersExceptions;
 
-import finalproject.javaee.model.util.exceptions.BaseException;
+import finalproject.javaee.util.exceptions.BaseException;
 
 public class NotLoggedException extends BaseException {
 

@@ -7,9 +7,9 @@ import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.exceptions.BaseException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.NotLoggedException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.*;
+import finalproject.javaee.util.exceptions.BaseException;
+import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
+import finalproject.javaee.util.exceptions.usersExceptions.*;
 import finalproject.javaee.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -24,20 +24,22 @@ public class UserController extends BaseController {
     @Autowired private UserService userService;
 
     @PostMapping(value = "/register")
-    public MessageDTO userRegistration(@RequestBody User user, HttpSession session) throws Exception {
+    public RegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws Exception {
+        RegisterDTO registerDTO = userService.register(user);
         session.setAttribute("User", user);
         session.setAttribute("Username", user.getUsername());
-        return userService.register(user);
+        return registerDTO;
     }
 
     @RequestMapping(value = "/register/{userId}/{secureCode}")
-    private UserInformationDTO completeRegister(@PathVariable("secureCode") String secureCode,
-                                                @PathVariable("userId") long userId,
-                                                HttpSession session) throws Exception {
+    private MessageDTO completeRegister(@PathVariable("secureCode") String secureCode,
+                                                @PathVariable("userId") long userId, HttpSession session) throws Exception {
+        userService.validateIfUserExist(userId);
         User user = userRepository.findById(userId);
+        MessageDTO messageDTO = userService.complete(user, secureCode);
         session.setAttribute("User", user);
         session.setAttribute("Username", user.getUsername());
-        return userService.complete(user, secureCode, userId);
+        return messageDTO;
     }
 
     @PostMapping(value = "/login")
@@ -45,10 +47,12 @@ public class UserController extends BaseController {
         User user = userRepository.findByUsername(loginDTO.getUsername());
         if (!isLoggedIn(session)) {
             if(user.isCompleted()) {
-                userService.validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
+                userService.validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword().trim());
                 session.setAttribute("User", user);
                 session.setAttribute("Username", user.getUsername());
-            }else throw new InvalidInputException("Account is not activated.");
+            }else {
+                throw new InvalidInputException("Account is not activated.");
+            }
         } else {
             throw new UserActivityException("User already logged in.");
         }
@@ -64,6 +68,7 @@ public class UserController extends BaseController {
         session.invalidate();
         return new MessageDTO("Logout successful.");
     }
+
     /* ************* Follow and Unfollow ************* */
 
     @GetMapping(value = "/follow/{id}")
@@ -89,7 +94,9 @@ public class UserController extends BaseController {
     @PutMapping(value = "/profile/edit/password")
     public MessageDTO editPassword(@RequestBody EditPasswordDTO editPasswordDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));
-        return userService.editPassword(user, editPasswordDTO);
+        MessageDTO messageDTO = userService.editPassword(user, editPasswordDTO);
+        session.invalidate();
+        return messageDTO;
     }
 
     @PutMapping(value = "/profile/edit/email")
@@ -129,6 +136,8 @@ public class UserController extends BaseController {
             } else {
                 throw new InvalidInputException("Account is not activated.");
             }
-        } else throw new NotLoggedException();
+        } else {
+            throw new NotLoggedException();
+        }
     }
 }

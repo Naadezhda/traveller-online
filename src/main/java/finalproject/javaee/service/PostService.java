@@ -10,9 +10,9 @@ import finalproject.javaee.dto.userDTO.ViewUserRelationsDTO;
 import finalproject.javaee.dto.pojoDTO.MediaDTO;
 import finalproject.javaee.model.pojo.*;
 import finalproject.javaee.model.repository.*;
-import finalproject.javaee.model.util.exceptions.BaseException;
-import finalproject.javaee.model.util.exceptions.postsExceptions.*;
-import finalproject.javaee.model.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.util.exceptions.BaseException;
+import finalproject.javaee.util.exceptions.postsExceptions.*;
+import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -69,16 +69,16 @@ public class PostService {
     public AddPostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
         Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
         postRepository.save(p);
-        List<String> media = dto.getMediaURIs();
+        List<String> media = dto.getMediaUri();
         isValidNumberOfPhotos(media);
         for (String s : media) {
             Media m = new Media(p.getId(), s);
             mediaRepository.save(m);
         }
-        Media video = new Media(p.getId(), dto.getVideoURI());
+        Media video = new Media(p.getId(), dto.getVideoUri());
         mediaRepository.save(video);
         return new AddPostWithMediaDTO(dto.getDescription(), dto.getLocationId(),
-                dto.getCategoriesId(), media, dto.getVideoURI());
+                dto.getCategoriesId(), media, dto.getVideoUri());
     }
 
     public List<PostWithMediaDTO> getAllUserPosts(Long id) throws BaseException {

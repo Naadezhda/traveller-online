@@ -9,7 +9,7 @@ import finalproject.javaee.dto.userDTO.PostsByLikesComparator;
 import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.exceptions.BaseException;
+import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;

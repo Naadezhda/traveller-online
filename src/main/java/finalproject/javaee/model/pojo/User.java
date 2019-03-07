@@ -2,7 +2,7 @@ package finalproject.javaee.model.pojo;
 
 import finalproject.javaee.dto.pojoDTO.DtoConvertible;
 import finalproject.javaee.dto.userDTO.UserDTO;
-import finalproject.javaee.model.util.CryptWithMD5;
+import finalproject.javaee.util.Crypt;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,21 +69,18 @@ public class User implements Comparable<User>, DtoConvertible<UserDTO> {
             inverseJoinColumns = @JoinColumn(name = "comment_id", referencedColumnName = "id"))
     private Set<Comment> likedComments;
 
-    public String getPassword() {
-        return CryptWithMD5.crypt(password).trim();
-    }
+//    public String getPassword() {
+//        return Crypt.hashPassword(password).trim();
+//    }
 
-    public String getVerifyPassword() {
-        return CryptWithMD5.crypt(verifyPassword).trim();
-    }
+//    public String getVerifyPassword() {
+//        return Crypt.hashPassword(verifyPassword).trim();
+//    }
 
-    public void setPassword(String password) {
-        this.password = CryptWithMD5.crypt(password).trim();
-    }
+//    public void setPassword(String password) {
+//        this.password = Crypt.hashPassword(password).trim();
+//    }
 
-    public void setVerifyPassword(String verifyPassword) {
-        this.verifyPassword = CryptWithMD5.crypt(verifyPassword).trim();
-    }
 
     @Override
     public int compareTo(User o) {

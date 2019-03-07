@@ -7,11 +7,11 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.CommentRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.exceptions.BaseException;
-import finalproject.javaee.model.util.exceptions.postsExceptions.IllegalCommentException;
-import finalproject.javaee.model.util.exceptions.postsExceptions.InvalidPostException;
-import finalproject.javaee.model.util.exceptions.postsExceptions.LikedPostException;
-import finalproject.javaee.model.util.exceptions.postsExceptions.NotLikedPostException;
+import finalproject.javaee.util.exceptions.BaseException;
+import finalproject.javaee.util.exceptions.postsExceptions.IllegalCommentException;
+import finalproject.javaee.util.exceptions.postsExceptions.InvalidPostException;
+import finalproject.javaee.util.exceptions.postsExceptions.LikedPostException;
+import finalproject.javaee.util.exceptions.postsExceptions.NotLikedPostException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

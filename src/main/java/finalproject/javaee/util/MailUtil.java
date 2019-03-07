@@ -1,6 +1,4 @@
-package finalproject.javaee.model.util;
-
-import finalproject.javaee.model.pojo.User;
+package finalproject.javaee.util;
 
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;

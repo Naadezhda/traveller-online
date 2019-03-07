@@ -1,9 +1,9 @@
 package finalproject.javaee.controller;
 
 import finalproject.javaee.model.pojo.ErrorMessage;
-import finalproject.javaee.model.util.exceptions.BaseException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.ExistException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.NotLoggedException;
+import finalproject.javaee.util.exceptions.BaseException;
+import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 @RequestMapping(produces = "application/json")
 public abstract class BaseController {
 
-    static Logger logger = Logger.getLogger(UserController.class.getName());
+    static Logger logger = Logger.getLogger(BaseController.class.getName());
 
     @ExceptionHandler({NotLoggedException.class})
     @ResponseStatus(value = HttpStatus.UNAUTHORIZED)

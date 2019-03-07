@@ -8,7 +8,7 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

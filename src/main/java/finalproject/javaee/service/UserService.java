@@ -7,11 +7,12 @@ import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.MailUtil;
-import finalproject.javaee.model.util.exceptions.BaseException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.ExistException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.InvalidInputException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.*;
+import finalproject.javaee.util.Crypt;
+import finalproject.javaee.util.MailUtil;
+import finalproject.javaee.util.exceptions.BaseException;
+import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.util.exceptions.usersExceptions.InvalidInputException;
+import finalproject.javaee.util.exceptions.usersExceptions.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,17 +27,15 @@ import java.util.List;
 @Transactional(rollbackOn = BaseException.class)
 public class UserService {
 
-    static Logger logger = Logger.getLogger(UserController.class.getName());
+    static Logger logger = Logger.getLogger(UserService.class.getName());
 
     @Autowired private UserRepository userRepository;
     @Autowired private PostService postService;
 
-    public MessageDTO register(User user) throws Exception{
+    public RegisterDTO register(User user) throws Exception{
         validateUsername(user.getUsername());
-        validatePassword(user.getPassword(), user.getVerifyPassword());
-//        validatePassword(CryptWithMD5.crypt(user.getPassword()),CryptWithMD5.crypt(user.getVerifyPassword()));
-//        user.setPassword(CryptWithMD5.crypt(user.getPassword()));
-//        user.setVerifyPassword(CryptWithMD5.crypt(user.getVerifyPassword()));
+        validatePassword(user.getPassword().trim(), user.getVerifyPassword().trim());
+        user.setPassword(Crypt.hashPassword(user.getPassword().trim()));
         validateFirstName(user.getFirstName());
         validateLastName(user.getLastName());
         validateEmail(user.getEmail());
@@ -55,22 +54,18 @@ public class UserService {
             }
         }).start();
 
-        return new MessageDTO("Registration success.We have sent you email to " + user.getEmail() + "." +
-                "Please click the link in that message to activate your account!");
+        return new RegisterDTO(("Registration success.We have sent you email to " + user.getEmail() + "." +
+                "Please click the link in that message to activate your account!"),user.getId(), user.getUsername(),
+                user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoto(), user.getGender());
     }
-    public UserInformationDTO complete(User user, String secureCode, long id) throws BaseException{
+    public MessageDTO complete(User user, String secureCode) throws BaseException {
         if(user.isCompleted()) {
-            throw new InvalidInputException("Account is not activated.");
+            throw new InvalidInputException("Account is already activated.");
         }
-        if (userRepository.existsById(id)) {
             validateKey(user.getSecureCode(), secureCode);
             user.setCompleted(true);
             userRepository.save(user);
-        }else {
-            throw new ExistException("User does not exist.");
-        }
-        return new UserInformationDTO(user.getId(), user.getUsername(), user.getFirstName(),
-                user.getLastName(), user.getEmail(), user.getPhoto(), user.getGender());
+        return new MessageDTO("Account has been successfully verified!");
     }
 
     public MessageDTO followUser(User user, long id) throws BaseException {
@@ -131,10 +126,9 @@ public class UserService {
     }
 
     public MessageDTO editPassword(User user, EditPasswordDTO editPasswordDTO) throws BaseException{
-        if(editPasswordDTO.getOldPassword().equals(user.getPassword())) {
-//        if(editPasswordDTO.getOldPassword().equals(CryptWithMD5.crypt(user.getPassword()))) {
-            validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
-            user.setPassword(editPasswordDTO.getNewPassword());
+        if(Crypt.checkPassword(editPasswordDTO.getOldPassword().trim(),user.getPassword().trim())){
+            validatePassword(editPasswordDTO.getNewPassword().trim(), editPasswordDTO.getVerifyNewPassword().trim());
+            user.setPassword(Crypt.hashPassword(editPasswordDTO.getNewPassword()).trim());
             userRepository.save(user);
         }else {
             throw new InvalidInputException("Invalid password input.");
@@ -143,8 +137,7 @@ public class UserService {
     }
 
     public MessageDTO editEmail(User user, EditEmailDTO editEmailDTO) throws BaseException {
-//      if(editEmailDTO.getPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
-        if (editEmailDTO.getPassword().equals(user.getPassword())) {
+        if(Crypt.checkPassword(editEmailDTO.getPassword().trim(),user.getPassword().trim())){
             validateEmail(editEmailDTO.getNewEmail());
             user.setEmail(editEmailDTO.getNewEmail());
             userRepository.save(user);
@@ -169,8 +162,7 @@ public class UserService {
     }
 
     public UserInformationDTO deleteUser(User user, DeleteUserProfileDTO deleteUserProfileDTO) throws BaseException{
-//      if(deleteUserProfileDTO.getConfirmPassword().equals(CryptWithMD5.crypt(user.getPassword()))){
-        if (deleteUserProfileDTO.getConfirmPassword().equals(user.getPassword())) {
+        if(Crypt.checkPassword(deleteUserProfileDTO.getConfirmPassword().trim(),user.getPassword().trim())){
             for (ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
                 unfollowUser(user, user1.getId());
             }
@@ -178,7 +170,6 @@ public class UserService {
         } else{
             throw new InvalidInputException("Invalid password input.");
         }
-
         return new UserInformationDTO(user.getId(),user.getUsername(),user.getFirstName(),
                 user.getLastName(),user.getEmail(),user.getPhoto(),user.getGender());
     }
@@ -249,20 +240,15 @@ public class UserService {
             throw new InvalidLoginException();
         } else {
             User user = userRepository.findByUsername(username);
-            if (user == null || !user.getPassword().equals(password)) {
+            if (user == null || !Crypt.checkPassword(password,user.getPassword().trim())) {
                 throw new InvalidLoginException();
             }
         }
     }
 
-    public void validateIfUserExist(long userId)throws Exception {
+    public void validateIfUserExist(long userId)throws BaseException {
         if(!userRepository.existsById(userId)) {
             throw new ExistException("User does not exist.");
         }
     }
-
-    public User getUserById(long id) {
-        return getUserById(id);
-    }
-
 }

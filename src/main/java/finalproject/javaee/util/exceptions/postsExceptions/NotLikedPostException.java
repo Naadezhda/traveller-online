@@ -1,6 +1,6 @@
-package finalproject.javaee.model.util.exceptions.postsExceptions;
+package finalproject.javaee.util.exceptions.postsExceptions;
 
-import finalproject.javaee.model.util.exceptions.BaseException;
+import finalproject.javaee.util.exceptions.BaseException;
 
 public class NotLikedPostException extends BaseException {
 
