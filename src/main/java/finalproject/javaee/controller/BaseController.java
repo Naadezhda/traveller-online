@@ -2,9 +2,8 @@ package finalproject.javaee.controller;
 
 import finalproject.javaee.model.pojo.ErrorMessage;
 import finalproject.javaee.model.util.exceptions.BaseException;
-import finalproject.javaee.model.util.exceptions.ExistException;
+import finalproject.javaee.model.util.exceptions.usersExceptions.ExistException;
 import finalproject.javaee.model.util.exceptions.usersExceptions.NotLoggedException;
-import finalproject.javaee.model.util.exceptions.usersRegistrationExcepions.RegistrationException;
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -28,14 +27,6 @@ public abstract class BaseController {
     public ErrorMessage handleNotLogged(NotLoggedException n){
         logger.error(n.getMessage());
         ErrorMessage message = new ErrorMessage(n.getMessage(), HttpStatus.UNAUTHORIZED.value(), LocalDateTime.now());
-        return message;
-    }
-
-    @ExceptionHandler({RegistrationException.class})
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    public ErrorMessage handleRegistrationErrors(RegistrationException r){
-        logger.error(r.getMessage());
-        ErrorMessage message = new ErrorMessage(r.getMessage(), HttpStatus.BAD_REQUEST.value(), LocalDateTime.now());
         return message;
     }
 
@@ -74,6 +65,6 @@ public abstract class BaseController {
         keyGenerator.init(128);
         SecretKey secretKey = keyGenerator.generateKey();
         String secureCode = secretKey.toString();
-        return secureCode.substring(secureCode.length()-8,secureCode.length());
+        return secureCode.substring(secureCode.length()-8,secureCode.length()-1);
     }
 }

@@ -1,7 +1,6 @@
 package finalproject.javaee.service;
 
 import finalproject.javaee.controller.SearchController;
-import finalproject.javaee.controller.UserController;
 import finalproject.javaee.dto.*;
 import finalproject.javaee.dto.pojoDTO.CountryDTO;
 import finalproject.javaee.dto.pojoDTO.LocationDTO;
@@ -13,7 +12,7 @@ import finalproject.javaee.model.pojo.*;
 import finalproject.javaee.model.repository.*;
 import finalproject.javaee.model.util.exceptions.BaseException;
 import finalproject.javaee.model.util.exceptions.postsExceptions.*;
-import finalproject.javaee.model.util.exceptions.usersExceptions.UserExistException;
+import finalproject.javaee.model.util.exceptions.usersExceptions.ExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,24 +24,14 @@ import java.util.List;
 @Transactional(rollbackOn = BaseException.class)
 public class PostService {
 
-    @Autowired
-    UserController userController;
-    @Autowired
-    PostRepository postRepository;
-    @Autowired
-    MediaRepository mediaRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    CommentRepository commentRepository;
-    @Autowired
-    SearchController searchController;
-    @Autowired
-    UserService userService;
-    @Autowired
-    LocationRepository locationRepository;
-    @Autowired
-    CountryRepository countryRepository;
+
+    @Autowired private PostRepository postRepository;
+    @Autowired private MediaRepository mediaRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private SearchController searchController;
+    @Autowired private UserService userService;
+    @Autowired private LocationRepository locationRepository;
+    @Autowired private CountryRepository countryRepository;
 
     public List<PostWithUserAndMediaDTO> getAllPostsByCategory(User user, long categoryId) {
         List<ViewUserRelationsDTO> users = userService.getAllUserFollowing(user);
@@ -57,7 +46,7 @@ public class PostService {
 
     public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
         if(!userRepository.existsById(userId)) {
-            throw new UserExistException("There is no user with such id!");
+            throw new ExistException("There is no user with such id!");
         }
         else{
             System.out.println("User with id " + userId);
@@ -94,7 +83,7 @@ public class PostService {
 
     public List<PostWithMediaDTO> getAllUserPosts(Long id) throws BaseException {
         if(!userRepository.existsById(id)) {
-            throw new UserExistException("There is no user with such id!");
+            throw new ExistException("There is no user with such id!");
         }
         List<Post> posts = postRepository.findAllByUserId(id);
         List<PostWithMediaDTO> postWithMedia = new ArrayList<>();
@@ -192,7 +181,7 @@ public class PostService {
 
     public ViewUserProfileDTO viewProfile(long id) throws BaseException {
         if(!userRepository.existsById(id)) {
-            throw new UserExistException("There is no user with such id!");
+            throw new ExistException("There is no user with such id!");
         }
         User u = userRepository.findById(id);
         List<Post> posts = postRepository.findAllByUserId(u.getId());

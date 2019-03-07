@@ -1,8 +1,6 @@
 package finalproject.javaee.controller;
 import finalproject.javaee.dto.pojoDTO.CommentDTO;
 import finalproject.javaee.model.pojo.User;
-import finalproject.javaee.model.repository.CommentRepository;
-import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceptions.BaseException;
 import finalproject.javaee.service.CommentService;
@@ -16,16 +14,9 @@ import javax.servlet.http.HttpSession;
 
 public class CommentController extends BaseController{
 
-    @Autowired
-    CommentRepository commentRepository;
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    PostRepository postRepository;
-    @Autowired
-    UserController userController;
-    @Autowired
-    CommentService commentService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private UserController userController;
+    @Autowired private CommentService commentService;
 
     @PostMapping(value = "/comment/posts/{id}")
     public CommentDTO postComment(@PathVariable("id") long id, @RequestBody String comment, HttpSession session) throws BaseException {

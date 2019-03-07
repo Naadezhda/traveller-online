@@ -9,8 +9,7 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.exceptions.BaseException;
 import finalproject.javaee.model.util.exceptions.usersExceptions.NotLoggedException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.UserLoggedInException;
-import finalproject.javaee.model.util.exceptions.usersExceptions.UserLoggedOutException;
+import finalproject.javaee.model.util.exceptions.usersExceptions.*;
 import finalproject.javaee.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,10 +20,8 @@ import javax.servlet.http.HttpSession;
 @Controller
 public class UserController extends BaseController {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private UserService userService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private UserService userService;
 
     @PostMapping(value = "/register")
     public MessageDTO userRegistration(@RequestBody User user, HttpSession session) throws Exception {
@@ -51,9 +48,9 @@ public class UserController extends BaseController {
                 userService.validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword());
                 session.setAttribute("User", user);
                 session.setAttribute("Username", user.getUsername());
-            }else throw new BaseException("Verify email address.");
+            }else throw new InvalidInputException("Account is not activated.");
         } else {
-            throw new UserLoggedInException();
+            throw new UserActivityException("User already logged in.");
         }
         return new UserLoginDTO(user.getId(), user.getUsername(), user.getFirstName(),
                 user.getLastName(), user.getEmail(), user.getPhoto(), user.getGender());
@@ -62,20 +59,18 @@ public class UserController extends BaseController {
     @PostMapping(value = "/logout")
     public MessageDTO userLogout(HttpSession session) throws BaseException {
         if (!isLoggedIn(session)) {
-            throw new UserLoggedOutException();
+            throw new UserActivityException("User already logged out.");
         }
         session.invalidate();
         return new MessageDTO("Logout successful.");
     }
     /* ************* Follow and Unfollow ************* */
 
-
-    @GetMapping(value = "/follow/{id}") //TODO return a message saying "You've followed successful"
+    @GetMapping(value = "/follow/{id}")
     public MessageDTO userFollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(getLoggedUserByIdSession(session));
         return userService.followUser(user, id);
     }
-
 
     @DeleteMapping(value = "/unfollow/{id}")
     public MessageDTO userUnfollow(@PathVariable("id") long id, HttpSession session) throws BaseException {
@@ -132,7 +127,7 @@ public class UserController extends BaseController {
             if (user.isCompleted()) {
                 return ((User) (session.getAttribute("User"))).getId();
             } else {
-                throw new BaseException("Account is not activated.");
+                throw new InvalidInputException("Account is not activated.");
             }
         } else throw new NotLoggedException();
     }

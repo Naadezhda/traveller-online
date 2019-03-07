@@ -21,12 +21,9 @@ import javax.transaction.Transactional;
 @Transactional(rollbackOn = BaseException.class)
 public class CommentService {
 
-    @Autowired
-    PostRepository postRepository;
-    @Autowired
-    CommentRepository commentRepository;
-    @Autowired
-    UserRepository userRepository;
+    @Autowired private PostRepository postRepository;
+    @Autowired private CommentRepository commentRepository;
+    @Autowired private UserRepository userRepository;
 
     public CommentDTO writeComment(User user, long id, String comment){
         Post post = postRepository.findById(id);

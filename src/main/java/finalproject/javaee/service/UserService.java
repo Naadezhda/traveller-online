@@ -9,8 +9,9 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.model.util.MailUtil;
 import finalproject.javaee.model.util.exceptions.BaseException;
+import finalproject.javaee.model.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.model.util.exceptions.usersExceptions.InvalidInputException;
 import finalproject.javaee.model.util.exceptions.usersExceptions.*;
-import finalproject.javaee.model.util.exceptions.usersRegistrationExcepions.*;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,10 +28,8 @@ public class UserService {
 
     static Logger logger = Logger.getLogger(UserController.class.getName());
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    PostService postService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PostService postService;
 
     public MessageDTO register(User user) throws Exception{
         validateUsername(user.getUsername());
@@ -59,17 +58,16 @@ public class UserService {
         return new MessageDTO("Registration success.We have sent you email to " + user.getEmail() + "." +
                 "Please click the link in that message to activate your account!");
     }
-
-    public UserInformationDTO complete(User user, String secureCode, long id) throws BaseException {
-        if (user.isCompleted()) {
-            throw new RegistrationException("Registration is already confirmed.");
+    public UserInformationDTO complete(User user, String secureCode, long id) throws BaseException{
+        if(user.isCompleted()) {
+            throw new InvalidInputException("Account is not activated.");
         }
         if (userRepository.existsById(id)) {
             validateKey(user.getSecureCode(), secureCode);
             user.setCompleted(true);
             userRepository.save(user);
-        } else {
-            throw new UserExistException();
+        }else {
+            throw new ExistException("User does not exist.");
         }
         return new UserInformationDTO(user.getId(), user.getUsername(), user.getFirstName(),
                 user.getLastName(), user.getEmail(), user.getPhoto(), user.getGender());
@@ -83,10 +81,10 @@ public class UserService {
                 user.getFollowing().add(followingUser);
                 userRepository.save(user);
             } else {
-                throw new FollowException("Already followed.");
+                throw new UserRelationException("Already followed.");
             }
         } else {
-            throw new UserExistException();
+            throw new ExistException("User does not exist.");
         }
         return new MessageDTO(user.getUsername() + " follow " + followingUser.getUsername() + ".");
     }
@@ -99,10 +97,10 @@ public class UserService {
                 user.getFollowing().remove(unfollowingUser);
                 userRepository.save(user);
             } else {
-                throw new FollowException("User is not followed.");
+                throw new UserRelationException("User is not followed.");
             }
         } else {
-            throw new UserExistException();
+            throw new ExistException("User does not exist.");
         }
         return new MessageDTO(user.getUsername() + " unfollow " + unfollowingUser.getUsername() + ".");
     }
@@ -138,8 +136,8 @@ public class UserService {
             validatePassword(editPasswordDTO.getNewPassword(), editPasswordDTO.getVerifyNewPassword());
             user.setPassword(editPasswordDTO.getNewPassword());
             userRepository.save(user);
-        } else {
-            throw new WrongPasswordInputException();
+        }else {
+            throw new InvalidInputException("Invalid password input.");
         }
         return new MessageDTO("Password changed successfully.");
     }
@@ -150,20 +148,20 @@ public class UserService {
             validateEmail(editEmailDTO.getNewEmail());
             user.setEmail(editEmailDTO.getNewEmail());
             userRepository.save(user);
-        } else {
-            throw new WrongPasswordInputException();
+        }else{
+            throw new InvalidInputException("Invalid password input.");
         }
         return new MessageDTO("Email changed successfully.");
     }
 
-    public MessageDTO editFirstName(User user, EditFirstNameDTO editFirstNameDTO) throws RegistrationException{
+    public MessageDTO editFirstName(User user, EditFirstNameDTO editFirstNameDTO) throws BaseException{
         validateFirstName(editFirstNameDTO.getNewFirstName());
         user.setFirstName(editFirstNameDTO.getNewFirstName());
         userRepository.save(user);
         return new MessageDTO("First name changed successfully.");
     }
 
-    public MessageDTO editLastName(User user, EditLastNameDTO editLastNameDTO) throws RegistrationException{
+    public MessageDTO editLastName(User user, EditLastNameDTO editLastNameDTO) throws BaseException{
         validateLastName(editLastNameDTO.getNewLastName());
         user.setLastName(editLastNameDTO.getNewLastName());
         userRepository.save(user);
@@ -176,10 +174,9 @@ public class UserService {
             for (ViewUserRelationsDTO user1 : getAllUserFollowing(user)) {
                 unfollowUser(user, user1.getId());
             }
-//            userLogout(session);
             userRepository.delete(user);
-        } else {
-            throw new WrongPasswordInputException();
+        } else{
+            throw new InvalidInputException("Invalid password input.");
         }
 
         return new UserInformationDTO(user.getId(),user.getUsername(),user.getFirstName(),
@@ -187,63 +184,63 @@ public class UserService {
     }
 
     /* ************* Validations ************* */
-    public void validateKey(String key, String verifyKey) throws BaseException {
-        if (!key.equals(verifyKey)) {
-            throw new BaseException("Entered wrong code.");
+
+    public void validateKey(String key, String verifyKey) throws BaseException{
+        if(!key.equals(verifyKey)){
+            throw new InvalidInputException("Entered wrong code.");
         }
     }
 
-    private void validateUsername(String username)throws RegistrationException {
+    private void validateUsername(String username)throws BaseException {
         if(username == null || username.isEmpty()){
-            throw new InvalidUsernameException();
+            throw new InvalidInputException("Invalid username input.");
         }
-        if (userRepository.findByUsername(username) != null) {
-            throw new UsernameExistException();
-        }
-    }
-
-    private void validatePassword(String password, String verifyPassword) throws RegistrationException {
-        if ((password == null || verifyPassword == null) || (password.isEmpty() || verifyPassword.isEmpty()) ||
-                (password.length() < 6 || verifyPassword.length() < 6)) {
-            throw new InvalidPasswordException();
-        }
-        if (!password.equals(verifyPassword)) {
-            throw new MismatchPasswordException();
+        if(userRepository.findByUsername(username) != null){
+            throw new ExistException("Username already exist.");
         }
     }
 
-    private void validateFirstName(String firstName) throws RegistrationException {
-        if (firstName == null || firstName.isEmpty()) {
-            throw new InvalidFirstNameException();
+    private void validatePassword(String password, String verifyPassword) throws BaseException {
+        if((password == null || verifyPassword ==null)||(password.isEmpty() || verifyPassword.isEmpty()) ||
+                (password.length()<6 || verifyPassword.length() <6) ){
+            throw new InvalidInputException("Password must be at least six symbols.");
+        }
+        if(!password.equals(verifyPassword)){
+            throw new InvalidInputException("Passwords do not match.");
         }
     }
 
-    private void validateLastName(String lastName) throws RegistrationException {
-        if (lastName == null || lastName.isEmpty()) {
-            throw new InvalidLastNameException();
+    private void validateFirstName(String firstName) throws BaseException {
+        if(firstName == null || firstName.isEmpty()){
+            throw new InvalidInputException("Invalid first name input.");
+        }
+    }
+    private void validateLastName(String lastName) throws BaseException {
+        if(lastName == null || lastName.isEmpty()){
+            throw new InvalidInputException("Invalid last name input.");
         }
     }
 
-    private void validateEmail(String email) throws RegistrationException {
+    private void validateEmail(String email) throws BaseException {
         try {
             if (email != null) {
                 InternetAddress internetAddress = new InternetAddress(email);
                 internetAddress.validate();
             } else {
-                throw new InvalidEmailException();
+                throw new InvalidInputException("Invalid email input.");
             }
         } catch (AddressException e) {
             logger.error(e.getMessage());
-            throw new InvalidEmailException();
+            throw new InvalidInputException("Invalid email input.");
         }
-        if (userRepository.findByEmail(email) != null) {
-            throw new EmailExistException();
+        if(userRepository.findByEmail(email) != null){
+            throw new ExistException("Email already exist.");
         }
     }
 
-    private void validateGender(String gender) throws RegistrationException {
-        if (gender == null || !(gender.equalsIgnoreCase(("M")) || gender.equalsIgnoreCase(("F")))) {
-            throw new InvalidGenderException();
+    private void validateGender(String gender) throws BaseException{
+        if(gender == null ||!(gender.equalsIgnoreCase(("M")) || gender.equalsIgnoreCase(("F")))){
+            throw new InvalidInputException("Invalid gender input.");
         }
     }
 
@@ -258,9 +255,9 @@ public class UserService {
         }
     }
 
-    public void validateIfUserExist(long userId)throws UserExistException {
+    public void validateIfUserExist(long userId)throws Exception {
         if(!userRepository.existsById(userId)) {
-            throw new UserExistException();
+            throw new ExistException("User does not exist.");
         }
     }
 

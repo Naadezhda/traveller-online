@@ -8,8 +8,7 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
-import finalproject.javaee.model.util.exceptions.BaseException;
-import finalproject.javaee.model.util.exceptions.postsExceptions.PostExistException;
+import finalproject.javaee.model.util.exceptions.usersExceptions.ExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,14 +22,10 @@ import java.util.Base64;
 @RestController
 public class MediaController extends BaseController {
 
-    @Autowired
-    private MediaRepository mediaRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private UserController userController;
-    @Autowired
-    private PostRepository postRepository;
+    @Autowired private MediaRepository mediaRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private UserController userController;
+    @Autowired private PostRepository postRepository;
 
     public static final String MEDIA_DIR = "C:\\Users\\Надежда\\Desktop\\Upload\\";
 
@@ -45,10 +40,11 @@ public class MediaController extends BaseController {
     }
 
     @PostMapping(value = "/images/posts/{postId}/images")
-    public MessageDTO uploadPostsImages(@RequestBody MediaDTO dto,@PathVariable("postId") long postId, HttpSession session) throws Exception{
+    public MessageDTO uploadPostsImages(@RequestBody MediaDTO dto,
+                                        @PathVariable("postId") long postId, HttpSession session) throws Exception{
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         if(!postRepository.existsById(postId)){
-            throw new PostExistException();
+            throw new ExistException("Post does not exist.");
         }
         Post post = postRepository.findById(postId);
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
@@ -60,13 +56,13 @@ public class MediaController extends BaseController {
     }
 
     @PostMapping(value = "/video/posts/{postId}")
-    public MessageDTO uploadPostsVideo(@RequestBody MediaDTO dto,@PathVariable("postId") long postId, HttpSession session)throws Exception{
+    public MessageDTO uploadPostsVideo(@RequestBody MediaDTO dto,
+                                       @PathVariable("postId") long postId, HttpSession session)throws Exception{
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         if(!postRepository.existsById(postId)){
-            throw new PostExistException();
+            throw new ExistException("Post does not exist.");
         }
         Post post = postRepository.findById(postId);
-
         String fileName = user.getId() + System.currentTimeMillis() + ".mp4";
         String videoUri = readFile(dto.getMediaUri(),fileName);
         dto.setMediaUri(videoUri);
@@ -79,7 +75,7 @@ public class MediaController extends BaseController {
     public byte[] downloadImage(@PathVariable("name") String mediaName,HttpSession session) throws Exception {
         validateisLoggedIn(session);
         if(!mediaRepository.existsByMediaUrl(mediaName)) {
-            throw new BaseException("Image does not exist.");
+            throw new ExistException("Image does not exist.");
         }
         return download(mediaName);
     }
@@ -88,7 +84,7 @@ public class MediaController extends BaseController {
     public byte[] downloadVideo(@PathVariable("name") String mediaName,HttpSession session) throws Exception {
         validateisLoggedIn(session);
         if(!mediaRepository.existsByMediaUrl(mediaName)){
-            throw new BaseException("Video does not exist.");
+            throw new ExistException("Video does not exist.");
         }
         return download(mediaName);
     }

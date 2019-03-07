@@ -23,18 +23,11 @@ import java.util.List;
 @RestController
 public class SearchController extends BaseController {
 
-    @Autowired
-    UserRepository userRepository;
-    @Autowired
-    UserController userController;
-    @Autowired
-    PostRepository postRepository;
-    @Autowired
-    MediaRepository mediaRepository;
-    @Autowired
-    PostController postController;
-    @Autowired
-    UserService userService;
+    @Autowired private UserRepository userRepository;
+    @Autowired private UserController userController;
+    @Autowired private PostRepository postRepository;
+    @Autowired private MediaRepository mediaRepository;
+    @Autowired private UserService userService;
 
     @GetMapping(value = "/search/profile/{username}")
     public ViewUserProfileDTO viewProfile(@PathVariable String username, HttpSession session) throws BaseException {

@@ -28,8 +28,7 @@ public class Location implements DtoConvertible<LocationDTO> {
     private double latitude;
 
     @Transient
-    @Autowired
-    CountryRepository countryRepository;
+    @Autowired private CountryRepository countryRepository;
 
     @Override
     public LocationDTO toDTO() {

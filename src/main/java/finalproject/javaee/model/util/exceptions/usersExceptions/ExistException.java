@@ -2,9 +2,9 @@ package finalproject.javaee.model.util.exceptions.usersExceptions;
 
 import finalproject.javaee.model.util.exceptions.BaseException;
 
-public class UserLoggedInException extends BaseException {
+public class ExistException extends BaseException {
 
-    public UserLoggedInException() {
-        super("User already logged in.");
+    public ExistException(String message) {
+        super(message);
     }
 }
