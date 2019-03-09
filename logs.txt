@@ -1,9 +1,0 @@
-[ERROR] 2019-03-09 09:17:44,110 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - User already logged in.
-[ERROR] 2019-03-09 09:18:28,419 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - The password must be at least six characters,one upper case and one lower case letter,one number and one special character.
-[ERROR] 2019-03-09 09:19:01,867 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - The password must be at least six characters,one upper case and one lower case letter,one number and one special character.
-[ERROR] 2019-03-09 09:20:06,944 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - Wrong username or password!
-[ERROR] 2019-03-09 09:20:25,534 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - Wrong username or password!
-[ERROR] 2019-03-09 09:20:36,752 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - Wrong username or password!
-[ERROR] 2019-03-09 09:20:41,116 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - Wrong username or password!
-[ERROR] 2019-03-09 09:21:03,389 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - Wrong username or password!
-[ERROR] 2019-03-09 09:21:07,837 finalproject.javaee.controller.BaseController.handleMyErrors(BaseController.java:44) - Wrong username or password!

@@ -32,6 +32,7 @@ public class PostService {
     @Autowired private UserService userService;
     @Autowired private LocationRepository locationRepository;
     @Autowired private CountryRepository countryRepository;
+    @Autowired private CategoryRepository categoryRepository;
 
     public List<PostWithUserAndMediaDTO> getAllPostsByCategory(User user, long categoryId) {
         List<ViewUserRelationsDTO> users = userService.getAllUserFollowing(user);
@@ -45,12 +46,7 @@ public class PostService {
     }
 
     public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
-        if(!userRepository.existsById(userId)) {
-            throw new ExistException("There is no user with such id!");
-        }
-        else{
-            System.out.println("User with id " + userId);
-        }
+      userService.validateIfUserExist(userId);
         User user = userRepository.findById(userId);
         return new ViewUserProfileDTO(user.getUsername(), user.getPhoto(),
                 userService.getAllUserFollowing(user),
@@ -59,7 +55,9 @@ public class PostService {
 
     }
 
-    public AddPostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto)  {
+    public AddPostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
+        validateIfLocationExist(dto.getLocationId());
+        validateIfCategoryExist(dto.getCategoriesId());
         Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
         postRepository.save(p);
         return new AddPostWithMediaDTO(dto.getDescription(), dto.getLocationId(),
@@ -67,9 +65,7 @@ public class PostService {
     }
 
     public List<PostWithMediaDTO> getAllUserPosts(Long id) throws BaseException {
-        if(!userRepository.existsById(id)) {
-            throw new ExistException("There is no user with such id!");
-        }
+        userService.validateIfUserExist(id);
         List<Post> posts = postRepository.findAllByUserId(id);
         List<PostWithMediaDTO> postWithMedia = new ArrayList<>();
         for (Post p : posts) {
@@ -114,9 +110,7 @@ public class PostService {
     }
 
     public MessageDTO likeUserPost(User user, long id) throws BaseException {
-        if (!postRepository.existsById(id)) {
-            throw new InvalidPostException("Does not exist post with such id");
-        }
+        validateIfPostExist(id);
         Post post = postRepository.findById(id);
         if (!post.getUsersWhoLiked().contains(user)) {
             post.getUsersWhoLiked().add(user);
@@ -130,9 +124,7 @@ public class PostService {
     }
 
     public MessageDTO dislikeUserPost(User user, long id) throws BaseException {
-        if (!postRepository.existsById(id)) {
-            throw new InvalidPostException("Does not exist post with such id");
-        }
+        validateIfPostExist(id);
         Post post = postRepository.findById(id);
         if (post.getUsersWhoLiked().contains(user)) {
             post.getUsersWhoLiked().remove(user);
@@ -147,9 +139,7 @@ public class PostService {
     }
 
     public PostWithMediaDTO findPostById(long id) throws BaseException {
-        if (!postRepository.existsById(id)) {
-            throw new InvalidPostException("Does not exist post with such id");
-        }
+        validateIfPostExist(id);
         Post post = postRepository.findById(id);
         List<Media> media = mediaRepository.findAllByPostId(post.getId());
         List<MediaDTO> mediaDtos = listMediaToDTO(media);
@@ -165,9 +155,7 @@ public class PostService {
     }
 
     public ViewUserProfileDTO viewProfile(long id) throws BaseException {
-        if(!userRepository.existsById(id)) {
-            throw new ExistException("There is no user with such id!");
-        }
+        userService.validateIfUserExist(id);
         User u = userRepository.findById(id);
         List<Post> posts = postRepository.findAllByUserId(u.getId());
         List<PostWithMediaDTO> postsWithMedia = new ArrayList<>();
@@ -182,7 +170,19 @@ public class PostService {
 
     protected void validateIfPostExist(long postId)throws BaseException {
         if(!postRepository.existsById(postId)) {
-            throw new ExistException("Post doesn't exist");
+            throw new ExistException("Does not exist post with such id.");
+        }
+    }
+
+    private void  validateIfLocationExist(long locationId) throws BaseException{
+        if(!locationRepository.existsById(locationId)){
+            throw new ExistException("Location does not exist.");
+        }
+    }
+
+    private void  validateIfCategoryExist(long categoryId) throws BaseException{
+        if(!categoryRepository.existsById(categoryId)){
+            throw new ExistException("Category does not exist.");
         }
     }
 

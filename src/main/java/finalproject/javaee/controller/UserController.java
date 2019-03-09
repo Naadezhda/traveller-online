@@ -33,7 +33,7 @@ public class UserController extends BaseController {
     }
 
     @RequestMapping(value = "/register/{userId}/{secureCode}")
-    private MessageDTO completeRegister(@PathVariable("secureCode") String secureCode,
+    public MessageDTO completeRegister(@PathVariable("secureCode") String secureCode,
                                                 @PathVariable("userId") long userId) throws Exception {
         userService.validateIfUserExist(userId);
         User user = userRepository.findById(userId);
@@ -68,6 +68,7 @@ public class UserController extends BaseController {
     }
 
     /* ************* Follow and Unfollow ************* */
+
 
     @GetMapping(value = "/follow/{id}")
     public MessageDTO userFollow(@PathVariable("id") long id, HttpSession session) throws BaseException {

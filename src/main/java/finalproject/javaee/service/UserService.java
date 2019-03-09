@@ -39,6 +39,7 @@ public class UserService {
         validateFirstName(user.getFirstName());
         validateLastName(user.getLastName());
         validateEmail(user.getEmail());
+        user.setPhoto("default.png");
         validateGender(user.getGender());
         user.setSecureCode(BaseController.key());
         String secureCode = user.getSecureCode();
@@ -259,7 +260,7 @@ public class UserService {
 
     public void validateIfUserExist(long userId)throws BaseException {
         if(!userRepository.existsById(userId)) {
-            throw new ExistException("User does not exist.");
+            throw new ExistException("There is no user with such id!");
         }
     }
 }

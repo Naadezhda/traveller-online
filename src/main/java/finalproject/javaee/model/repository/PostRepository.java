@@ -6,6 +6,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     List<Post> findAllByUserId(long id);
     List<Post> findAllByUserIdAndCategoriesId(long id1, long id2);
-
+    boolean existsByIdAndUserId(long id, long postId);
     Post findById(long id);
 }

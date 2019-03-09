@@ -1,7 +1,6 @@
 package finalproject.javaee.service;
 
 import finalproject.javaee.dto.MessageDTO;
-import finalproject.javaee.dto.pojoDTO.MediaDTO;
 import finalproject.javaee.model.pojo.Media;
 import finalproject.javaee.model.pojo.Post;
 import finalproject.javaee.model.pojo.User;
@@ -13,6 +12,7 @@ import finalproject.javaee.util.exceptions.postsExceptions.InvalidPostException;
 import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.File;
@@ -33,56 +33,58 @@ public class MediaService {
     @Autowired private PostService postService;
     @Autowired private MediaRepository mediaRepository;
 
-    public MessageDTO addPhoto(User user, MediaDTO dto) throws IOException {
+    public MessageDTO addPhoto(User user, MultipartFile image) throws IOException {
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
-        String mediaUri = readFile(dto.getMediaUri(),fileName);
+        String mediaUri = readFile(image, fileName);
         user.setPhoto(mediaUri);
         userRepository.save(user);
         return new MessageDTO("Upload successful.");
     }
 
-    public MessageDTO addImages(User user, MediaDTO dto, long postId) throws  Exception {
+    public MessageDTO addImages(User user, MultipartFile image, long postId) throws Exception {
         postService.validateIfPostExist(postId);
         Post post = postRepository.findById(postId);
-        List<Media> images = mediaRepository.findAllByPostId(postId);
-        isValidNumberOfPhotos(images);
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
-        String mediaUri = readFile(dto.getMediaUri(),fileName);
-        dto.setMediaUri(mediaUri);
-        Media media = new Media(post.getId(), dto.getMediaUri());
+        List<Media> images = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".png", postId);
+        System.out.println(images.size());
+        isValidNumberOfPhotos(images);
+        String mediaUri = readFile(image, fileName);
+        Media media = new Media(post.getId(), mediaUri);
         mediaRepository.save(media);
         return new MessageDTO("Upload successful.");
     }
 
-    public MessageDTO addVideo(User user, MediaDTO dto, long postId) throws Exception{
+    public MessageDTO addVideo(User user, MultipartFile video, long postId) throws Exception {
         postService.validateIfPostExist(postId);
         Post post = postRepository.findById(postId);
         String fileName = user.getId() + System.currentTimeMillis() + ".mp4";
-        List<Media> video = mediaRepository.findAllByPostId(postId);
-        isValidNumberOfVideo(video,dto);
-        String videoUri = readFile(dto.getMediaUri(),fileName);
-        dto.setMediaUri(videoUri);
-        Media media = new Media(post.getId(), dto.getMediaUri());
+        List<Media> findVideo = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".mp4", postId);
+        isValidNumberOfVideo(findVideo,video);
+        String videoUri = readFile(video, fileName);
+        Media media = new Media(post.getId(), videoUri);
         mediaRepository.save(media);
         return new MessageDTO("Upload video successful.");
     }
 
-    public byte[] imagesDownload(String mediaName) throws Exception{
-        if(!mediaRepository.existsByMediaUrl(mediaName)) {
-            throw new ExistException("Image does not exist.");
+    public byte[] imagesDownload(String mediaName) throws Exception {
+        if(mediaRepository.existsByMediaUrl(mediaName)){
+            return download(mediaName);
         }
-        return download(mediaName);
+        if (userRepository.existsByPhoto(mediaName)) {
+            return download(mediaName);
+        }
+        throw new ExistException("Image does not exist.");
     }
 
-    public byte[] videoDownload(String mediaName) throws Exception{
-        if(!mediaRepository.existsByMediaUrl(mediaName)){
+    public byte[] videoDownload(String mediaName) throws Exception {
+        if (!mediaRepository.existsByMediaUrl(mediaName)) {
             throw new ExistException("Video does not exist.");
         }
         return download(mediaName);
     }
 
-    private String readFile(String media,String fileName) throws IOException {
-        String base64 = media;
+    private String readFile(MultipartFile media, String fileName) throws IOException {
+        byte[] base64 = Base64.getEncoder().encode(media.getBytes());
         byte[] bytes = Base64.getDecoder().decode(base64);
         File newImage = new File(MEDIA_DIR + fileName);
         FileOutputStream fos = new FileOutputStream(newImage);
@@ -100,16 +102,32 @@ public class MediaService {
         return bytes;
     }
 
+    public MessageDTO deletePhoto(User user){
+        user.setPhoto("default.png");
+        userRepository.save(user);
+        return new MessageDTO("Remove photo successful.");
+    }
+
+    public MessageDTO deleteMedia(User user, long postId, long mediaId) throws BaseException{
+        if(!postRepository.existsByIdAndUserId(postId,user.getId())) {
+            throw new ExistException("Post does not exist.");
+        }
+        if(!mediaRepository.existsByIdAndPostId(mediaId, postId)){
+            throw new ExistException("Image does not exist");
+        }
+        mediaRepository.deleteById(mediaId);
+        return new MessageDTO("Delete media successful.");
+    }
+
     private boolean isValidNumberOfPhotos(List<Media> photos) throws InvalidPostException {
-        if(photos.size() > 3){
+        if (photos.size() > 2) {
             throw new InvalidPostException("Cannot upload more than 3 photos.");
         }
         return true;
     }
 
-    private boolean isValidNumberOfVideo(List<Media> video, MediaDTO media) throws InvalidPostException {
-        if(video.size() > 1 ||
-                media.getMediaUri().substring(media.getMediaUri().length()-4, media.getMediaUri().length()-1).equals(".mp4")){
+    private boolean isValidNumberOfVideo(List<Media> video, MultipartFile media) throws InvalidPostException {
+        if(video.size() > 0 || !media.getOriginalFilename().endsWith(".mp4")){
             throw new InvalidPostException("Cannot upload more than 1 video.");
         }
         return true;

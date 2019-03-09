@@ -19,9 +19,9 @@ public class Media implements DtoConvertible<MediaDTO> {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
-    long id;
-    String mediaUrl;
-    long postId;
+    private long id;
+    private String mediaUrl;
+    private long postId;
 
     public Media(long postId, String mediaUrl){
         this.postId = postId;

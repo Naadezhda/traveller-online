@@ -13,10 +13,8 @@ import java.util.List;
 @Getter
 public class AddPostWithMediaDTO {
 
-    String description;
-    long locationId;
-    long categoriesId;
-//    List<String> mediaUri;
-//    String videoUri;
+    private String description;
+    private long locationId;
+    private long categoriesId;
 
 }
