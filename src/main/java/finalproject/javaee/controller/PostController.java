@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -41,7 +42,7 @@ public class PostController extends BaseController {
     }
 
     @GetMapping(value = "/newsfeed/categories/{category}")
-    public List<PostWithUserAndMediaDTO> getPostsByCategory(@PathVariable("category") int categoryId, HttpSession session) throws BaseException {
+    public List<PostWithUserAndMediaDTO> getPostsByCategory(@PathVariable("category") long categoryId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.getAllPostsByCategory(user, categoryId);
     }
@@ -94,6 +95,7 @@ public class PostController extends BaseController {
         return postService.likeUserPost(user, id);
     }
 
+    @Transactional
     @PostMapping(value = "/posts/{id}/dislike")
     public MessageDTO dislikePost(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));

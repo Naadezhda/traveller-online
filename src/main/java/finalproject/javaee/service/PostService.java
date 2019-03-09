@@ -91,7 +91,7 @@ public class PostService {
         List<PostWithUserAndMediaDTO> allPostsByFollowings = new ArrayList<>();
         for (ViewUserRelationsDTO u : users) {
             List<Post> postsByFollowing = postRepository.findAllByUserId(u.getId());
-            allPostsByFollowings.addAll(getPostsByUserWithMedia(u, postsByFollowing));
+                allPostsByFollowings.addAll(getPostsByUserWithMedia(u, postsByFollowing));
         }
         return allPostsByFollowings;
     }

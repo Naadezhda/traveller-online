@@ -1,7 +1,6 @@
 package finalproject.javaee.service;
 
 import finalproject.javaee.controller.BaseController;
-import finalproject.javaee.controller.UserController;
 import finalproject.javaee.dto.MessageDTO;
 import finalproject.javaee.dto.userDTO.*;
 import finalproject.javaee.dto.userDTO.editUserProfileDTO.*;
@@ -22,6 +21,7 @@ import javax.mail.internet.InternetAddress;
 import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
 @Transactional(rollbackOn = BaseException.class)
@@ -33,7 +33,7 @@ public class UserService {
     @Autowired private PostService postService;
 
     public RegisterDTO register(User user) throws Exception{
-        validateUsername(user.getUsername());
+        validateUsername(user.getUsername().trim());
         validatePassword(user.getPassword().trim(), user.getVerifyPassword().trim());
         user.setPassword(Crypt.hashPassword(user.getPassword().trim()));
         validateFirstName(user.getFirstName());
@@ -183,7 +183,7 @@ public class UserService {
     }
 
     private void validateUsername(String username)throws BaseException {
-        if(username == null || username.isEmpty()){
+        if(username == null || username.isEmpty() || username.contains(" ")){
             throw new InvalidInputException("Invalid username input.");
         }
         if(userRepository.findByUsername(username) != null){
@@ -192,22 +192,33 @@ public class UserService {
     }
 
     private void validatePassword(String password, String verifyPassword) throws BaseException {
-        if((password == null || verifyPassword ==null)||(password.isEmpty() || verifyPassword.isEmpty()) ||
-                (password.length()<6 || verifyPassword.length() <6) ){
-            throw new InvalidInputException("Password must be at least six symbols.");
+        if((password == null || verifyPassword == null)||(password.isEmpty() || verifyPassword.isEmpty())){
+            throw new InvalidInputException("Password can not be empty.");
+        }
+        if(password.contains(" ")||verifyPassword.contains(" ")){
+            throw new InvalidInputException("Password can not contains space.");
         }
         if(!password.equals(verifyPassword)){
             throw new InvalidInputException("Passwords do not match.");
         }
+        formatPassword(password);
+    }
+
+    private void formatPassword(String password) throws InvalidInputException {
+        Pattern p = Pattern.compile("((?=.*\\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=*!?-]).{6,})");
+        if(!p.matcher(password).find()){
+            throw new InvalidInputException("The password must be at least six characters," +
+                    "one upper case and one lower case letter,one number and one special character.");
+        }
     }
 
     private void validateFirstName(String firstName) throws BaseException {
-        if(firstName == null || firstName.isEmpty()){
+        if(firstName == null || firstName.isEmpty() || firstName.contains(" ")){
             throw new InvalidInputException("Invalid first name input.");
         }
     }
     private void validateLastName(String lastName) throws BaseException {
-        if(lastName == null || lastName.isEmpty()){
+        if(lastName == null || lastName.isEmpty() || lastName.contains(" ")){
             throw new InvalidInputException("Invalid last name input.");
         }
     }

@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import javax.transaction.Transactional;
 
 @Controller
 public class UserController extends BaseController {
@@ -33,21 +34,18 @@ public class UserController extends BaseController {
 
     @RequestMapping(value = "/register/{userId}/{secureCode}")
     private MessageDTO completeRegister(@PathVariable("secureCode") String secureCode,
-                                                @PathVariable("userId") long userId, HttpSession session) throws Exception {
+                                                @PathVariable("userId") long userId) throws Exception {
         userService.validateIfUserExist(userId);
         User user = userRepository.findById(userId);
-        MessageDTO messageDTO = userService.complete(user, secureCode);
-        session.setAttribute("User", user);
-        session.setAttribute("Username", user.getUsername());
-        return messageDTO;
+        return userService.complete(user, secureCode);
     }
 
     @PostMapping(value = "/login")
     public UserLoginDTO userLogin(@RequestBody LoginDTO loginDTO, HttpSession session) throws BaseException {
         User user = userRepository.findByUsername(loginDTO.getUsername());
         if (!isLoggedIn(session)) {
+            userService.validateUsernameAndPassword(loginDTO.getUsername().trim(), loginDTO.getPassword().trim());
             if(user.isCompleted()) {
-                userService.validateUsernameAndPassword(loginDTO.getUsername(), loginDTO.getPassword().trim());
                 session.setAttribute("User", user);
                 session.setAttribute("Username", user.getUsername());
             }else {
@@ -117,6 +115,7 @@ public class UserController extends BaseController {
         return userService.editLastName(user, editLastNameDTO);
     }
 
+    @Transactional
     @DeleteMapping(value = "/profile/edit/delete")
     public UserInformationDTO deleteProfile(@RequestBody DeleteUserProfileDTO deleteUserProfileDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));

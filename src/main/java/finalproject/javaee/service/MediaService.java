@@ -108,7 +108,8 @@ public class MediaService {
     }
 
     private boolean isValidNumberOfVideo(List<Media> video, MediaDTO media) throws InvalidPostException {
-        if(video.size() > 0 || media.getMediaUri().substring(media.getMediaUri().length()-4, media.getMediaUri().length()-1).equals(".mp4")){
+        if(video.size() > 1 ||
+                media.getMediaUri().substring(media.getMediaUri().length()-4, media.getMediaUri().length()-1).equals(".mp4")){
             throw new InvalidPostException("Cannot upload more than 1 video.");
         }
         return true;

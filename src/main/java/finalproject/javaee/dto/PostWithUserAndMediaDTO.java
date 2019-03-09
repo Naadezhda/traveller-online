@@ -19,7 +19,7 @@ public class PostWithUserAndMediaDTO {
     private String photo;
     private LocalDateTime date;
     private PostWithMediaDTO postWithMedia;
-    int numOfLikes;
-    Set<UserDTO> likes;
+    private int numOfLikes;
+    private Set<UserDTO> likes;
 
 }
