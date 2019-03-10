@@ -12,6 +12,8 @@ import finalproject.javaee.util.exceptions.postsExceptions.InvalidPostException;
 import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
@@ -34,6 +36,7 @@ public class MediaService {
     @Autowired private MediaRepository mediaRepository;
 
     public MessageDTO addPhoto(User user, MultipartFile image) throws IOException {
+        validateMedia(image);
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
         String mediaUri = readFile(image, fileName);
         user.setPhoto(mediaUri);
@@ -42,11 +45,11 @@ public class MediaService {
     }
 
     public MessageDTO addImages(User user, MultipartFile image, long postId) throws Exception {
+        validateMedia(image);
         postService.validateIfPostExist(postId);
         Post post = postRepository.findById(postId);
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
         List<Media> images = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".png", postId);
-        System.out.println(images.size());
         isValidNumberOfPhotos(images);
         String mediaUri = readFile(image, fileName);
         Media media = new Media(post.getId(), mediaUri);
@@ -55,6 +58,7 @@ public class MediaService {
     }
 
     public MessageDTO addVideo(User user, MultipartFile video, long postId) throws Exception {
+        validateMedia(video);
         postService.validateIfPostExist(postId);
         Post post = postRepository.findById(postId);
         String fileName = user.getId() + System.currentTimeMillis() + ".mp4";
@@ -67,16 +71,21 @@ public class MediaService {
     }
 
     public byte[] imagesDownload(String mediaName) throws Exception {
-        if(mediaRepository.existsByMediaUrl(mediaName)){
-            return download(mediaName);
-        }
-        if (userRepository.existsByPhoto(mediaName)) {
-            return download(mediaName);
+        if(MEDIA_DIR.matches(mediaName)) {
+            if (mediaRepository.existsByMediaUrl(mediaName)) {
+                return download(mediaName);
+            }
+            if (userRepository.existsByPhoto(mediaName)) {
+                return download(mediaName);
+            }
         }
         throw new ExistException("Image does not exist.");
     }
 
     public byte[] videoDownload(String mediaName) throws Exception {
+        if(!MEDIA_DIR.matches(mediaName)){
+            throw new  ExistException("Video does not exist.");
+        }
         if (!mediaRepository.existsByMediaUrl(mediaName)) {
             throw new ExistException("Video does not exist.");
         }
@@ -86,6 +95,10 @@ public class MediaService {
     private String readFile(MultipartFile media, String fileName) throws IOException {
         byte[] base64 = Base64.getEncoder().encode(media.getBytes());
         byte[] bytes = Base64.getDecoder().decode(base64);
+        File mediaDir = new File(MEDIA_DIR);
+        if(!mediaDir.exists()){
+            mediaDir.mkdirs();
+        }
         File newImage = new File(MEDIA_DIR + fileName);
         FileOutputStream fos = new FileOutputStream(newImage);
         fos.write(bytes);
@@ -117,6 +130,15 @@ public class MediaService {
         }
         mediaRepository.deleteById(mediaId);
         return new MessageDTO("Delete media successful.");
+    }
+
+    public void validateMedia(MultipartFile media) throws MaxUploadSizeExceededException, IOException {
+        if (media.isEmpty()){
+            throw new MultipartException("Invalid media size.");
+        }
+        if((media.getSize() > 50000000)) {
+            throw new MaxUploadSizeExceededException(50000000);
+        }
     }
 
     private boolean isValidNumberOfPhotos(List<Media> photos) throws InvalidPostException {

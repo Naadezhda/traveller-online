@@ -35,6 +35,7 @@ public class User implements Comparable<User> {
     private String gender;
     private String secureCode;
     private boolean isCompleted;
+    private boolean resetPassword;
 
     @ManyToMany(cascade = {CascadeType.ALL})
     @JoinTable(name = "relations",

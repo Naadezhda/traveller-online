@@ -59,6 +59,7 @@ public class UserService {
                 "Please click the link in that message to activate your account!"),user.getId(), user.getUsername(),
                 user.getFirstName(), user.getLastName(), user.getEmail(), user.getPhoto(), user.getGender());
     }
+
     public MessageDTO complete(User user, String secureCode) throws BaseException {
         if(user.isCompleted()) {
             throw new InvalidInputException("Account is already activated.");
@@ -135,6 +136,40 @@ public class UserService {
             throw new InvalidInputException("Invalid password input.");
         }
         return new MessageDTO("Password changed successfully.");
+    }
+
+    public MessageDTO forgottenPassword(String email) throws BaseException {
+        if(userRepository.existsByEmail(email)){
+            User user = userRepository.findByEmail(email);
+            new Thread(()-> {
+                try {
+                    MailUtil.sendMail("ittalentsX@gmail.com", user.getEmail(), "Reset forgotten password.",
+                            "You asked us to reset your forgotten password." +
+                                    " To complete the process, please click on the link below or paste it into your browser:" +
+                                    " http://localhost:7777/reset/password/" + user.getId());
+                    user.setResetPassword(true);
+                    userRepository.save(user);
+                } catch (Exception e) {
+                    logger.error(e.getMessage());
+                }
+            }).start();
+        }else{
+            throw new ExistException("There is no user with this email address.");
+        }
+        return new MessageDTO("Reset forgotten password. An e-mail was sent with further instructions.");
+    }
+
+    public MessageDTO resetPassword(long userId,String newPassword, String verifyNewPassword) throws BaseException {
+        validateIfUserExist(userId);
+        User user = userRepository.findById(userId);
+        if(!user.isResetPassword()){
+            throw new InvalidInputException("Тhere is no request to reset the password.");
+        }
+        validatePassword(newPassword.trim(), verifyNewPassword.trim());
+        user.setPassword(Crypt.hashPassword(newPassword).trim());
+        user.setResetPassword(false);
+        userRepository.save(user);
+        return new MessageDTO("Password successfully updated.");
     }
 
     public MessageDTO editEmail(User user, EditEmailDTO editEmailDTO) throws BaseException {

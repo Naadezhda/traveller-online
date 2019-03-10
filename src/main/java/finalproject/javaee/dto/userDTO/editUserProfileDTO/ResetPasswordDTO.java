@@ -1,17 +1,16 @@
-package finalproject.javaee.dto.userDTO;
-
+package finalproject.javaee.dto.userDTO.editUserProfileDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
 @AllArgsConstructor
 @NoArgsConstructor
 @Setter
 @Getter
-public class CompleteRegisterDTO {
+public class ResetPasswordDTO {
 
-    private String secureCode;
+    private String newPassword;
+    private String verifyNewPassword;
 }

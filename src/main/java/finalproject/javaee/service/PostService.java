@@ -25,7 +25,6 @@ import java.util.List;
 @Transactional(rollbackOn = BaseException.class)
 public class PostService {
 
-
     @Autowired private PostRepository postRepository;
     @Autowired private MediaRepository mediaRepository;
     @Autowired private UserRepository userRepository;
@@ -47,9 +46,7 @@ public class PostService {
     }
 
     public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
-        if(!userRepository.existsById(userId)) {
-            throw new ExistException("There is no user with such id!");
-        }
+        userService.validateIfUserExist(userId);
         User user = userRepository.findById(userId);
         return new ViewUserProfileDTO(user.getUsername(), user.getPhoto(),
                 userService.getAllUserFollowing(user),
@@ -67,9 +64,7 @@ public class PostService {
     }
 
     public MessageDTO deleteUserPost(User user, long postId) throws BaseException {
-        if(!postRepository.existsById(postId)) {
-            throw new InvalidInputException("There is no post with such id!");
-        }
+        validateIfPostExist(postId);
         Post p = postRepository.findById(postId);
         if(user.getId() != userRepository.findById(p.getUserId()).getId()){
             throw new NotLoggedException("Cannot delete others' posts.");
@@ -79,9 +74,7 @@ public class PostService {
     }
 
     public List<PostWithMediaDTO> getAllUserPosts(Long id) throws BaseException {
-        if(!userRepository.existsById(id)) {
-            throw new ExistException("There is no user with such id!");
-        }
+        userService.validateIfUserExist(id);
         List<Post> posts = postRepository.findAllByUserId(id);
         List<PostWithMediaDTO> postWithMedia = new ArrayList<>();
         for (Post p : posts) {
