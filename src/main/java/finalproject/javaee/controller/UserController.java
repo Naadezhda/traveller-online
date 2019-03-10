@@ -98,6 +98,24 @@ public class UserController extends BaseController {
         return messageDTO;
     }
 
+    @PutMapping(value = "/reset/password")
+    public MessageDTO resetForgottenPassword(@RequestBody ForgottenPasswordDTO forgottenPassword ,
+                                             HttpSession session) throws BaseException {
+        if(isLoggedIn(session)){
+            throw new UserActivityException("You can not reset your password while you are logged in");
+        }
+        return userService.forgottenPassword(forgottenPassword.getEmail());
+    }
+
+    @PutMapping(value = "/reset/password/{userId}")
+    public MessageDTO resetPassword(@PathVariable("userId") long userId,
+                                    @RequestBody ResetPasswordDTO resetPassword,HttpSession session)throws BaseException{
+        if(isLoggedIn(session)){
+            throw new UserActivityException("You can not reset your password while you are logged in");
+        }
+        return userService.resetPassword(userId, resetPassword.getNewPassword(),resetPassword.getVerifyNewPassword());
+    }
+
     @PutMapping(value = "/profile/edit/email")
     public MessageDTO editEmail(@RequestBody EditEmailDTO editEmailDTO, HttpSession session) throws BaseException{
         User user = userRepository.findById(getLoggedUserByIdSession(session));

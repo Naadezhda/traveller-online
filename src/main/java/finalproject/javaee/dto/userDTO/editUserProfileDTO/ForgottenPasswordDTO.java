@@ -1,16 +1,15 @@
-package finalproject.javaee.dto.userDTO;
+package finalproject.javaee.dto.userDTO.editUserProfileDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-public class LoginDTO {
+public class ForgottenPasswordDTO {
 
-    private String username;
-    private String password;
+    private String email;
 }
