@@ -10,6 +10,7 @@ import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.util.exceptions.postsExceptions.InvalidPostException;
 import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +27,8 @@ import java.util.List;
 @Transactional(rollbackOn = BaseException.class)
 public class MediaService {
 
-    public static final String MEDIA_DIR = "C:\\Users\\Надежда\\Desktop\\Upload\\";
+    //public static final String MEDIA_DIR = "C:\\Users\\Надежда\\Desktop\\Upload\\";
+    public static final String MEDIA_DIR = "C:\\Users\\Vicky\\Desktop\\Upload\\";
 
     @Autowired private UserRepository userRepository;
     @Autowired private PostRepository postRepository;
@@ -44,6 +46,9 @@ public class MediaService {
     public MessageDTO addImages(User user, MultipartFile image, long postId) throws Exception {
         postService.validateIfPostExist(postId);
         Post post = postRepository.findById(postId);
+        if(!(post.getUserId() == user.getId())){
+            throw new NotLoggedException("Cannot add media to others' posts.");
+        }
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
         List<Media> images = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".png", postId);
         System.out.println(images.size());
@@ -57,6 +62,9 @@ public class MediaService {
     public MessageDTO addVideo(User user, MultipartFile video, long postId) throws Exception {
         postService.validateIfPostExist(postId);
         Post post = postRepository.findById(postId);
+        if(!(post.getUserId() == user.getId())){
+            throw new NotLoggedException("Cannot add media to others' posts.");
+        }
         String fileName = user.getId() + System.currentTimeMillis() + ".mp4";
         List<Media> findVideo = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".mp4", postId);
         isValidNumberOfVideo(findVideo,video);

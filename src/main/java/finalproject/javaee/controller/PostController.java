@@ -17,9 +17,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import javax.transaction.Transactional;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 
@@ -98,6 +95,12 @@ public class PostController extends BaseController {
     public MessageDTO dislikePost(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.dislikeUserPost(user, id);
+    }
+
+    @GetMapping(value = "/profile/users/{id}/tagged")
+    public List<PostWithUserAndMediaDTO> viewTaggedPosts(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        userRepository.findById(userController.getLoggedUserByIdSession(session));
+        return postService.getTaggedPosts(id);
     }
 
 }

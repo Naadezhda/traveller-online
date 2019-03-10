@@ -12,7 +12,6 @@ import finalproject.javaee.model.pojo.*;
 import finalproject.javaee.model.repository.*;
 import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
-import finalproject.javaee.util.exceptions.usersExceptions.InvalidInputException;
 import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,6 @@ import java.util.List;
 @Service
 @Transactional(rollbackOn = BaseException.class)
 public class PostService {
-
 
     @Autowired private PostRepository postRepository;
     @Autowired private MediaRepository mediaRepository;
@@ -47,9 +45,7 @@ public class PostService {
     }
 
     public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
-        if(!userRepository.existsById(userId)) {
-            throw new ExistException("There is no user with such id!");
-        }
+        userService.validateIfUserExist(userId);
         User user = userRepository.findById(userId);
         return new ViewUserProfileDTO(user.getUsername(), user.getPhoto(),
                 userService.getAllUserFollowing(user),
@@ -58,7 +54,7 @@ public class PostService {
 
     }
 
-    public PostWithMediaDTO  addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
+    public PostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
         validateIfLocationExist(dto.getLocationId());
         validateIfCategoryExist(dto.getCategoriesId());
         Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
@@ -67,9 +63,7 @@ public class PostService {
     }
 
     public MessageDTO deleteUserPost(User user, long postId) throws BaseException {
-        if(!postRepository.existsById(postId)) {
-            throw new InvalidInputException("There is no post with such id!");
-        }
+        validateIfPostExist(postId);
         Post p = postRepository.findById(postId);
         if(user.getId() != userRepository.findById(p.getUserId()).getId()){
             throw new NotLoggedException("Cannot delete others' posts.");
@@ -79,9 +73,7 @@ public class PostService {
     }
 
     public List<PostWithMediaDTO> getAllUserPosts(Long id) throws BaseException {
-        if(!userRepository.existsById(id)) {
-            throw new ExistException("There is no user with such id!");
-        }
+        userService.validateIfUserExist(id);
         List<Post> posts = postRepository.findAllByUserId(id);
         List<PostWithMediaDTO> postWithMedia = new ArrayList<>();
         for (Post p : posts) {
@@ -199,6 +191,20 @@ public class PostService {
                 userService.getAllUserFollowing(u),
                 userService.getAllUserFollowers(u),
                 postsWithMedia);
+    }
+
+    public List<PostWithUserAndMediaDTO> getTaggedPosts(long id) throws BaseException {
+        userService.validateIfUserExist(id);
+        List<Post> taggedPosts = postRepository.findAllByTagUserId(id);
+        List<PostWithUserAndMediaDTO> postsWithMedia = new ArrayList<>();
+        for (Post p : taggedPosts) {
+            List<Media> media = mediaRepository.findAllByPostId(p.getId());
+            User u = userRepository.findById(p.getUserId());
+            PostWithMediaDTO postDto = new PostWithMediaDTO(postToPostDTO(p), listMediaToDTO(media));
+            postsWithMedia.add(new PostWithUserAndMediaDTO(u.getUsername(), u.getPhoto(), p.getDate(),
+                    postDto, p.getUsersWhoLiked().size(), p.getUsersWhoLikedInDTO()));
+        }
+        return postsWithMedia;
     }
 
     protected void validateIfPostExist(long postId)throws BaseException {

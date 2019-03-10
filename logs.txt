@@ -1,1 +1,1 @@
-[ERROR] 2019-03-10 12:37:01,127 finalproject.javaee.controller.BaseController.handleOtherErrors(BaseController.java:52) - Content type 'multipart/form-data;boundary=--------------------------650957317395262142832769;charset=UTF-8' not supported
+[ERROR] 2019-03-10 18:13:59,412 finalproject.javaee.controller.BaseController.handleRegistrationErrors(BaseController.java:36) - Does not exist post with such id.
