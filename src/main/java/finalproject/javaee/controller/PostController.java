@@ -11,6 +11,7 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.service.PostService;
+import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -53,15 +54,16 @@ public class PostController extends BaseController {
         return postService.viewUserProfile(userId);
     }
 
-    public byte[] downloadImage(String mediaName) throws IOException {
-        File file = new File(mediaName);
-        return Files.readAllBytes(file.toPath());
-    }
-
     @PostMapping(value = "/users/addPost")
-    public AddPostWithMediaDTO addPost(@RequestBody AddPostWithMediaDTO dto, HttpSession session) throws BaseException {
+    public PostWithMediaDTO addPost(@RequestBody AddPostWithMediaDTO dto, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.addUserPost(user, dto);
+    }
+
+    @DeleteMapping(value = "/users/posts/{id}")
+    public MessageDTO deletePost(@PathVariable long id, HttpSession session) throws BaseException {
+        User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
+        return postService.deleteUserPost(user, id);
     }
 
     @GetMapping(value = "/newsfeed")
@@ -70,23 +72,19 @@ public class PostController extends BaseController {
         return postService.getAllPostsByFollowings(user);
     }
 
-    public enum Filter {
-        LIKES, DATE
-    }
-
-    @PostMapping(value = "/newsfeed")
-    public List<PostWithUserAndMediaDTO> getAllOrdered(@RequestBody Filter filter, HttpSession session) throws BaseException {
+    @GetMapping(value = "/newsfeed/ordered")
+    public List<PostWithUserAndMediaDTO> getAllOrdered(@RequestParam String filter, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         List<PostWithUserAndMediaDTO> posts = postService.getAllPostsByFollowings(user);
         switch (filter) {
-            case LIKES:
+            case "likes":
                 Collections.sort(posts, new PostsByLikesComparator());
-                break;
-            case DATE:
+                return posts;
+            case "date":
                 Collections.sort(posts, new PostsByDateComparator());
-                break;
+                return posts;
         }
-        return posts;
+        throw new ExistException("There is no such filter!");
     }
 
     @PostMapping(value = "/posts/{id}/like")

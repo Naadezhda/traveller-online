@@ -5,13 +5,11 @@ import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
+@RestController
 public class CommentController extends BaseController{
 
     @Autowired private UserRepository userRepository;
@@ -25,19 +23,19 @@ public class CommentController extends BaseController{
     }
 
     @DeleteMapping(value = "/comments/{commentId}/posts/{id}")
-    public CommentDTO deleteComment(@PathVariable("id") long id, @PathVariable long commentId, HttpSession session) throws BaseException {
+    public CommentDTO deleteComment(@PathVariable long commentId, @PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return commentService.deleteComment(user, id, commentId);
     }
 
     @PostMapping(value = "/comments/{commentId}/like/posts/{id}")
-    public void likeComment(@PathVariable("postId") long postId, @PathVariable("commentId") long commentId, HttpSession session) throws BaseException {
+    public void likeComment(@PathVariable("id") long postId, @PathVariable("commentId") long commentId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         commentService.likeComment(user, postId, commentId);
     }
 
     @DeleteMapping(value = "/comments/{commentId}/like/posts/{id}")
-    public void dislikeComment(@PathVariable("postId") long postId, @PathVariable("commentId") long commentId, HttpSession session) throws BaseException {
+    public void dislikeComment(@PathVariable("id") long postId, @PathVariable("commentId") long commentId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         commentService.dislikeComment(user, postId, commentId);
     }

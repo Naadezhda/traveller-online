@@ -1,6 +1,5 @@
 package finalproject.javaee.dto.pojoDTO;
 
-import finalproject.javaee.dto.pojoDTO.CountryDTO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

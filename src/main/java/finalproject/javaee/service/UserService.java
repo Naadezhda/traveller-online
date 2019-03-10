@@ -82,7 +82,7 @@ public class UserService {
         } else {
             throw new ExistException("User does not exist.");
         }
-        return new MessageDTO(user.getUsername() + " follow " + followingUser.getUsername() + ".");
+        return new MessageDTO(user.getUsername() + " followed " + followingUser.getUsername() + ".");
     }
 
     public MessageDTO unfollowUser(User user, long id) throws BaseException {
@@ -98,7 +98,7 @@ public class UserService {
         } else {
             throw new ExistException("User does not exist.");
         }
-        return new MessageDTO(user.getUsername() + " unfollow " + unfollowingUser.getUsername() + ".");
+        return new MessageDTO(user.getUsername() + " unfollowed " + unfollowingUser.getUsername() + ".");
     }
 
     public List<ViewUserRelationsDTO> getAllUserFollowers(User user) {

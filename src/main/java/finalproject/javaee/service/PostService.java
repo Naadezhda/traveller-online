@@ -11,8 +11,9 @@ import finalproject.javaee.dto.pojoDTO.MediaDTO;
 import finalproject.javaee.model.pojo.*;
 import finalproject.javaee.model.repository.*;
 import finalproject.javaee.util.exceptions.BaseException;
-import finalproject.javaee.util.exceptions.postsExceptions.*;
 import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.util.exceptions.usersExceptions.InvalidInputException;
+import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +47,9 @@ public class PostService {
     }
 
     public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
-      userService.validateIfUserExist(userId);
+        if(!userRepository.existsById(userId)) {
+            throw new ExistException("There is no user with such id!");
+        }
         User user = userRepository.findById(userId);
         return new ViewUserProfileDTO(user.getUsername(), user.getPhoto(),
                 userService.getAllUserFollowing(user),
@@ -55,17 +58,30 @@ public class PostService {
 
     }
 
-    public AddPostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
+    public PostWithMediaDTO  addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
         validateIfLocationExist(dto.getLocationId());
         validateIfCategoryExist(dto.getCategoriesId());
         Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
         postRepository.save(p);
-        return new AddPostWithMediaDTO(dto.getDescription(), dto.getLocationId(),
-                dto.getCategoriesId());
+        return new PostWithMediaDTO(postToPostDTO(p), new ArrayList<>());
+    }
+
+    public MessageDTO deleteUserPost(User user, long postId) throws BaseException {
+        if(!postRepository.existsById(postId)) {
+            throw new InvalidInputException("There is no post with such id!");
+        }
+        Post p = postRepository.findById(postId);
+        if(user.getId() != userRepository.findById(p.getUserId()).getId()){
+            throw new NotLoggedException("Cannot delete others' posts.");
+        }
+        postRepository.delete(p);
+        return new MessageDTO("Post deleted successfully.");
     }
 
     public List<PostWithMediaDTO> getAllUserPosts(Long id) throws BaseException {
-        userService.validateIfUserExist(id);
+        if(!userRepository.existsById(id)) {
+            throw new ExistException("There is no user with such id!");
+        }
         List<Post> posts = postRepository.findAllByUserId(id);
         List<PostWithMediaDTO> postWithMedia = new ArrayList<>();
         for (Post p : posts) {
@@ -82,12 +98,15 @@ public class PostService {
         return postWithMedia;
     }
 
-    public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) {
+    public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) { //TODO
         List<ViewUserRelationsDTO> users = userService.getAllUserFollowing(user);
         List<PostWithUserAndMediaDTO> allPostsByFollowings = new ArrayList<>();
         for (ViewUserRelationsDTO u : users) {
             List<Post> postsByFollowing = postRepository.findAllByUserId(u.getId());
+            allPostsByFollowings.addAll(getPostsByUserWithMedia(u, postsByFollowing));
+            /*if(!postsByFollowing.isEmpty()) {
                 allPostsByFollowings.addAll(getPostsByUserWithMedia(u, postsByFollowing));
+            }*/
         }
         return allPostsByFollowings;
     }
@@ -97,7 +116,7 @@ public class PostService {
         List<PostWithUserAndMediaDTO> postsByUser = new ArrayList<>();
         for (Post p : postsByFollowing) {
             Location location = locationRepository.findById(p.getLocationId());
-            PostDTO dto = new PostDTO(p.getId(), p.getDescription(), location.toDTO(), p.getCategoriesId());
+            PostDTO dto = new PostDTO(p.getId(), p.getDescription(), locationToLocationDTO(location), p.getCategoriesId());
             posts.add(dto);
             List<Media> media = mediaRepository.findAllByPostId(dto.getId());
             List<MediaDTO> mediadtos = new ArrayList();
@@ -109,6 +128,21 @@ public class PostService {
         return postsByUser;
     }
 
+    private CountryDTO countryToCountryDTO(Country country){
+        return new CountryDTO(country.getId(), country.getCountryName());
+    }
+
+    private LocationDTO locationToLocationDTO(Location location){
+        Country country = countryRepository.findById(location.getCountryId());
+        return new LocationDTO(location.getId(), location.getCity(), countryToCountryDTO(country), location.getLongitude(),
+                location.getLatitude());
+    }
+
+    public PostDTO postToPostDTO(Post post){
+        Location location = locationRepository.findById(post.getLocationId());
+        return new PostDTO(post.getId(), post.getDescription(), locationToLocationDTO(location), post.getCategoriesId());
+    }
+
     public MessageDTO likeUserPost(User user, long id) throws BaseException {
         validateIfPostExist(id);
         Post post = postRepository.findById(id);
@@ -117,7 +151,7 @@ public class PostService {
             user.getLikedPosts().add(post);
             userRepository.save(user);
         } else {
-            throw new LikedPostException("Already liked this post.");
+            throw new BaseException("Already liked this post.");
         }
         return new MessageDTO(user.getUsername() + " liked " +
                 userRepository.findById(post.getUserId()).getUsername() + "'s post.");
@@ -129,10 +163,9 @@ public class PostService {
         if (post.getUsersWhoLiked().contains(user)) {
             post.getUsersWhoLiked().remove(user);
             user.getLikedPosts().remove(post);
-            postRepository.save(post);
             userRepository.save(user);
         } else {
-            throw new NotLikedPostException("Not liked this post.");
+            throw new BaseException("Not liked this post.");
         }
         return new MessageDTO(user.getUsername() + " disliked " +
                 userRepository.findById(post.getUserId()).getUsername() + "'s post.");
@@ -143,7 +176,7 @@ public class PostService {
         Post post = postRepository.findById(id);
         List<Media> media = mediaRepository.findAllByPostId(post.getId());
         List<MediaDTO> mediaDtos = listMediaToDTO(media);
-        return new PostWithMediaDTO(post.toDTO(), mediaDtos);
+        return new PostWithMediaDTO(postToPostDTO(post), mediaDtos);
     }
 
     public List<MediaDTO> listMediaToDTO(List<Media> media){

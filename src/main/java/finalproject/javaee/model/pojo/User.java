@@ -1,8 +1,4 @@
 package finalproject.javaee.model.pojo;
-
-import finalproject.javaee.dto.pojoDTO.DtoConvertible;
-import finalproject.javaee.dto.userDTO.UserDTO;
-import finalproject.javaee.util.Crypt;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -20,7 +16,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "users")
-public class User implements Comparable<User>, DtoConvertible<UserDTO> {
+public class User implements Comparable<User> {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,10 +69,6 @@ public class User implements Comparable<User>, DtoConvertible<UserDTO> {
         return (int)(this.getId() - o.getId());
     }
 
-    @Override
-    public UserDTO toDTO() {
-        return new UserDTO(this.username, this.photo);
-    }
 
 }
 

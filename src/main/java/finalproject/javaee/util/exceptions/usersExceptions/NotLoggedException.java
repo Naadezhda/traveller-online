@@ -7,4 +7,8 @@ public class NotLoggedException extends BaseException {
     public NotLoggedException() {
         super("You are not logged!");
     }
+
+    public NotLoggedException(String message) {
+        super(message);
+    }
 }

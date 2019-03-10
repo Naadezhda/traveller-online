@@ -1,7 +1,5 @@
 package finalproject.javaee.model.pojo;
 
-import finalproject.javaee.dto.pojoDTO.CountryDTO;
-import finalproject.javaee.dto.pojoDTO.DtoConvertible;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +13,7 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "countries")
-public class Country implements DtoConvertible<CountryDTO> {
+public class Country  {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,8 +21,4 @@ public class Country implements DtoConvertible<CountryDTO> {
     private String countryName;
     private long regionId;
 
-    @Override
-    public CountryDTO toDTO() {
-        return new CountryDTO(this.id, this.countryName);
-    }
 }

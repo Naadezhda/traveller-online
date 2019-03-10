@@ -12,6 +12,7 @@ public interface UserRepository extends JpaRepository<User,Long> {
     User findById(long id);
     List<User> findAllByFollowingId(long id);
     List<User> findAllByFollowerId(long id);
+    List<User> findAllByUsernameContaining(String username);
 
     boolean existsByPhoto(String photo);
 

@@ -1,7 +1,6 @@
 package finalproject.javaee.controller;
 
 import finalproject.javaee.dto.MessageDTO;
-import finalproject.javaee.model.pojo.Media;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.service.MediaService;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpSession;
+
 @RestController
 public class MediaController extends BaseController {
 

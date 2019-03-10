@@ -1,12 +1,8 @@
 package finalproject.javaee.model.pojo;
 
-import finalproject.javaee.dto.pojoDTO.DtoConvertible;
-import finalproject.javaee.dto.pojoDTO.CommentDTO;
-import finalproject.javaee.model.repository.UserRepository;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -17,7 +13,7 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "comments")
-public class Comment implements DtoConvertible<CommentDTO> {
+public class Comment {
 
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
@@ -38,13 +34,4 @@ public class Comment implements DtoConvertible<CommentDTO> {
         this.date = LocalDateTime.now();
     }
 
-    @Transient
-    @Autowired
-    UserRepository userRepository;
-
-    @Override
-    public CommentDTO toDTO() {
-        User user = userRepository.findById(this.userId);
-        return new CommentDTO(user.getUsername(), user.getPhoto(), this.text);
-    }
 }

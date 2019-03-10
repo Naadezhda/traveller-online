@@ -9,6 +9,7 @@ import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.MediaRepository;
 import finalproject.javaee.model.repository.PostRepository;
 import finalproject.javaee.model.repository.UserRepository;
+import finalproject.javaee.service.PostService;
 import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ public class SearchController extends BaseController {
     @Autowired private PostRepository postRepository;
     @Autowired private MediaRepository mediaRepository;
     @Autowired private UserService userService;
+    @Autowired private PostService postService;
 
     @GetMapping(value = "/search/profile/{username}")
     public ViewUserProfileDTO viewProfile(@PathVariable String username, HttpSession session) throws BaseException {
@@ -44,13 +46,28 @@ public class SearchController extends BaseController {
                 postsWithMedia);
     }
 
+    @GetMapping(value = "/search/{username}") // works with containing
+    public List<String> filterUsernames(@PathVariable String username, HttpSession session) throws BaseException {
+        userController.getLoggedUserByIdSession(session);
+        return filterByUsername(username);
+    }
+
     public PostWithMediaDTO postToPostWithMediaDTO(Post p){
         List<Media> media = mediaRepository.findAllByPostId(p.getId());
-        List<MediaDTO> mediaDtos = new ArrayList<>();
-        for (Media m : media) {
+        List<MediaDTO> mediaDtos = postService.listMediaToDTO(media);
+        /*for (Media m : media) {
             mediaDtos.add(m.toDTO());
+        }*/
+        return new PostWithMediaDTO(postService.postToPostDTO(p), mediaDtos);
+    }
+
+    public List<String> filterByUsername(String username){
+        List<String> response = new ArrayList<>();
+        List<User> users = userRepository.findAllByUsernameContaining(username);
+        for (User u : users) {
+            response.add(u.getUsername());
         }
-        return new PostWithMediaDTO(p.toDTO(), mediaDtos);
+        return response;
     }
 
 }
