@@ -65,6 +65,20 @@ public class User implements Comparable<User> {
             inverseJoinColumns = @JoinColumn(name = "comment_id", referencedColumnName = "id"))
     private Set<Comment> likedComments;
 
+    public User(String username, String password, String firstName, String lastName, String email,
+                                  String gender, String secureCode) {
+        this.username = username;
+        this.password = password;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.photo = "default.png";
+        this.gender = gender;
+        this.secureCode = secureCode;
+        this.isCompleted=false;
+        this.resetPassword = false;
+    }
+
     @Override
     public int compareTo(User o) {
         return (int)(this.getId() - o.getId());

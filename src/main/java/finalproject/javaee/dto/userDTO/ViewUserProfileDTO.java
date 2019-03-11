@@ -1,7 +1,6 @@
 package finalproject.javaee.dto.userDTO;
 
 import finalproject.javaee.dto.PostWithMediaDTO;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,12 +14,12 @@ public class ViewUserProfileDTO{
 
     private String username;
     private String photo;
-    private long numberOfPost;
-    private List<PostWithMediaDTO> posts;
     private long numberOfFollowings;
     private List<ViewUserRelationsDTO> followings;
     private long numberOfFollowers;
     private List<ViewUserRelationsDTO> followers;
+    private long numberOfPost;
+    private List<PostWithMediaDTO> posts;
 
     public ViewUserProfileDTO(String username, String photo,
                               List<ViewUserRelationsDTO> followings, List<ViewUserRelationsDTO> followers,

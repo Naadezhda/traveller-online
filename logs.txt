@@ -1,0 +1,2 @@
+[ERROR] 2019-03-11 11:42:55,223 finalproject.javaee.controller.BaseController.handleNotLogged(BaseController.java:28) - You are not logged!
+[ERROR] 2019-03-11 11:56:28,000 finalproject.javaee.controller.BaseController.handleOtherErrors(BaseController.java:52) - could not execute statement; SQL [n/a]; constraint [null]; nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement

@@ -52,7 +52,6 @@ public class PostService {
                 userService.getAllUserFollowing(user),
                 userService.getAllUserFollowers(user),
                 getAllUserPosts(user.getId()));
-
     }
 
     public PostWithMediaDTO  addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
@@ -192,6 +191,20 @@ public class PostService {
                 userService.getAllUserFollowing(u),
                 userService.getAllUserFollowers(u),
                 postsWithMedia);
+    }
+
+    public List<PostWithUserAndMediaDTO> getTaggedPosts(long id) throws BaseException {
+        userService.validateIfUserExist(id);
+        List<Post> taggedPosts = postRepository.findAllByTagUserId(id);
+        List<PostWithUserAndMediaDTO> postsWithMedia = new ArrayList<>();
+        for (Post p : taggedPosts) {
+            List<Media> media = mediaRepository.findAllByPostId(p.getId());
+            User u = userRepository.findById(p.getUserId());
+            PostWithMediaDTO postDto = new PostWithMediaDTO(postToPostDTO(p), listMediaToDTO(media));
+            postsWithMedia.add(new PostWithUserAndMediaDTO(u.getUsername(), u.getPhoto(), p.getDate(),
+                    postDto, p.getUsersWhoLiked().size(), p.getUsersWhoLikedInDTO()));
+        }
+        return postsWithMedia;
     }
 
     protected void validateIfPostExist(long postId)throws BaseException {

@@ -32,17 +32,23 @@ public class UserService {
     @Autowired private UserRepository userRepository;
     @Autowired private PostService postService;
 
-    public RegisterDTO register(User user) throws Exception{
-        validateUsername(user.getUsername().trim());
-        validatePassword(user.getPassword().trim(), user.getVerifyPassword().trim());
-        user.setPassword(Crypt.hashPassword(user.getPassword().trim()));
-        validateFirstName(user.getFirstName());
-        validateLastName(user.getLastName());
-        validateEmail(user.getEmail());
-        user.setPhoto("default.png");
-        validateGender(user.getGender());
-        user.setSecureCode(BaseController.key());
-        String secureCode = user.getSecureCode();
+    public RegisterDTO register(RegisterInformationDTO registerInformation) throws Exception{
+        String username = registerInformation.getUsername().trim();
+        String password = registerInformation.getPassword().trim();
+        String verifyPassword = registerInformation.getVerifyPassword().trim();
+        String firstName = registerInformation.getFirstName().trim();
+        String lastName = registerInformation.getLastName().trim();
+        String email = registerInformation.getEmail().trim();
+        String gender = registerInformation.getGender().trim();
+        String secureCode = BaseController.key();
+        validateUsername(username);
+        validatePassword(password,verifyPassword);
+        validateFirstName(firstName);
+        validateLastName(lastName);
+        validateEmail(email);
+        validateGender(gender);
+        User user = new User(username,(Crypt.hashPassword(registerInformation.getPassword().trim())),
+                firstName,lastName,email,gender,secureCode);
         userRepository.save(user);
 
         new Thread(()-> {
@@ -72,6 +78,9 @@ public class UserService {
 
     public MessageDTO followUser(User user, long id) throws BaseException {
         User followingUser = userRepository.findById(id);
+        if(followingUser == user){
+            throw new InvalidInputException("You can not follow/unfollow yourself");
+        }
         if (userRepository.existsById(id)) {
             if (!user.getFollowing().contains(followingUser)) {
                 followingUser.getFollower().add(user);
@@ -88,6 +97,9 @@ public class UserService {
 
     public MessageDTO unfollowUser(User user, long id) throws BaseException {
         User unfollowingUser = userRepository.findById(id);
+        if(unfollowingUser == user){
+            throw new InvalidInputException("You can not follow/unfolow yourself");
+        }
         if (userRepository.existsById(id)) {
             if (user.getFollowing().contains(unfollowingUser)) {
                 unfollowingUser.getFollower().remove(user);
@@ -128,9 +140,12 @@ public class UserService {
     }
 
     public MessageDTO editPassword(User user, EditPasswordDTO editPasswordDTO) throws BaseException{
-        if(Crypt.checkPassword(editPasswordDTO.getOldPassword().trim(),user.getPassword().trim())){
-            validatePassword(editPasswordDTO.getNewPassword().trim(), editPasswordDTO.getVerifyNewPassword().trim());
-            user.setPassword(Crypt.hashPassword(editPasswordDTO.getNewPassword()).trim());
+        String oldPassword = editPasswordDTO.getOldPassword().trim();
+        String newPassword = editPasswordDTO.getNewPassword().trim();
+        String verifyNewPassword = editPasswordDTO.getVerifyNewPassword().trim();
+        if(Crypt.checkPassword(oldPassword,user.getPassword().trim())){
+            validatePassword(newPassword, verifyNewPassword);
+            user.setPassword(Crypt.hashPassword(newPassword));
             userRepository.save(user);
         }else {
             throw new InvalidInputException("Invalid password input.");
@@ -139,8 +154,11 @@ public class UserService {
     }
 
     public MessageDTO forgottenPassword(String email) throws BaseException {
-        if(userRepository.existsByEmail(email)){
-            User user = userRepository.findByEmail(email);
+        if(userRepository.existsByEmail(email.trim())){
+            User user = userRepository.findByEmail(email.trim());
+            if(!user.isCompleted()){
+                throw new InvalidInputException("Account is not activated.");
+            }
             new Thread(()-> {
                 try {
                     MailUtil.sendMail("ittalentsX@gmail.com", user.getEmail(), "Reset forgotten password.",
@@ -174,8 +192,8 @@ public class UserService {
 
     public MessageDTO editEmail(User user, EditEmailDTO editEmailDTO) throws BaseException {
         if(Crypt.checkPassword(editEmailDTO.getPassword().trim(),user.getPassword().trim())){
-            validateEmail(editEmailDTO.getNewEmail());
-            user.setEmail(editEmailDTO.getNewEmail());
+            validateEmail(editEmailDTO.getNewEmail().trim());
+            user.setEmail(editEmailDTO.getNewEmail().trim());
             userRepository.save(user);
         }else{
             throw new InvalidInputException("Invalid password input.");
@@ -184,15 +202,15 @@ public class UserService {
     }
 
     public MessageDTO editFirstName(User user, EditFirstNameDTO editFirstNameDTO) throws BaseException{
-        validateFirstName(editFirstNameDTO.getNewFirstName());
-        user.setFirstName(editFirstNameDTO.getNewFirstName());
+        validateFirstName(editFirstNameDTO.getNewFirstName().trim());
+        user.setFirstName(editFirstNameDTO.getNewFirstName().trim());
         userRepository.save(user);
         return new MessageDTO("First name changed successfully.");
     }
 
     public MessageDTO editLastName(User user, EditLastNameDTO editLastNameDTO) throws BaseException{
-        validateLastName(editLastNameDTO.getNewLastName());
-        user.setLastName(editLastNameDTO.getNewLastName());
+        validateLastName(editLastNameDTO.getNewLastName().trim());
+        user.setLastName(editLastNameDTO.getNewLastName().trim());
         userRepository.save(user);
         return new MessageDTO("Last name changed successfully.");
     }
@@ -287,7 +305,7 @@ public class UserService {
             throw new InvalidLoginException();
         } else {
             User user = userRepository.findByUsername(username);
-            if (user == null || !Crypt.checkPassword(password,user.getPassword().trim())) {
+            if (user == null || !username.equals(user.getUsername().trim()) || !Crypt.checkPassword(password,user.getPassword().trim())) {
                 throw new InvalidLoginException();
             }
         }

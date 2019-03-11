@@ -1,4 +1,4 @@
-package finalproject.javaee.dto.userDTO;
+package finalproject.javaee.util;
 
 import finalproject.javaee.dto.PostWithUserAndMediaDTO;
 

@@ -4,8 +4,8 @@ import finalproject.javaee.dto.AddPostWithMediaDTO;
 import finalproject.javaee.dto.MessageDTO;
 import finalproject.javaee.dto.PostWithMediaDTO;
 import finalproject.javaee.dto.PostWithUserAndMediaDTO;
-import finalproject.javaee.dto.userDTO.PostsByDateComparator;
-import finalproject.javaee.dto.userDTO.PostsByLikesComparator;
+import finalproject.javaee.util.PostsByDateComparator;
+import finalproject.javaee.util.PostsByLikesComparator;
 import finalproject.javaee.dto.userDTO.ViewUserProfileDTO;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
@@ -16,10 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import javax.transaction.Transactional;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
 
@@ -93,11 +89,16 @@ public class PostController extends BaseController {
         return postService.likeUserPost(user, id);
     }
 
-    @Transactional
     @PostMapping(value = "/posts/{id}/dislike")
     public MessageDTO dislikePost(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.dislikeUserPost(user, id);
+    }
+
+    @GetMapping(value = "/profile/users/{id}/tagged")
+    public List<PostWithUserAndMediaDTO> viewTaggedPosts(@PathVariable("id") long id, HttpSession session) throws BaseException {
+        userRepository.findById(userController.getLoggedUserByIdSession(session));
+        return postService.getTaggedPosts(id);
     }
 
 }

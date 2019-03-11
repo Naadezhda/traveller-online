@@ -10,6 +10,7 @@ import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.util.exceptions.postsExceptions.InvalidPostException;
 import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
@@ -48,6 +49,9 @@ public class MediaService {
         validateMedia(image);
         postService.validateIfPostExist(postId);
         Post post = postRepository.findById(postId);
+        if(!(post.getUserId() == user.getId())){
+            throw new NotLoggedException("Cannot add media to others' posts.");
+        }
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
         List<Media> images = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".png", postId);
         isValidNumberOfPhotos(images);
@@ -61,9 +65,12 @@ public class MediaService {
         validateMedia(video);
         postService.validateIfPostExist(postId);
         Post post = postRepository.findById(postId);
+        if(!(post.getUserId() == user.getId())){
+            throw new NotLoggedException("Cannot add media to others' posts.");
+        }
         String fileName = user.getId() + System.currentTimeMillis() + ".mp4";
         List<Media> findVideo = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".mp4", postId);
-        isValidNumberOfVideo(findVideo,video);
+        isValidNumberOfVideo(findVideo);
         String videoUri = readFile(video, fileName);
         Media media = new Media(post.getId(), videoUri);
         mediaRepository.save(media);
@@ -71,21 +78,16 @@ public class MediaService {
     }
 
     public byte[] imagesDownload(String mediaName) throws Exception {
-        if(MEDIA_DIR.matches(mediaName)) {
-            if (mediaRepository.existsByMediaUrl(mediaName)) {
-                return download(mediaName);
-            }
-            if (userRepository.existsByPhoto(mediaName)) {
-                return download(mediaName);
-            }
+        if (mediaRepository.existsByMediaUrl(mediaName)) {
+            return download(mediaName);
+        }
+        if (userRepository.existsByPhoto(mediaName)) {
+            return download(mediaName);
         }
         throw new ExistException("Image does not exist.");
     }
 
     public byte[] videoDownload(String mediaName) throws Exception {
-        if(!MEDIA_DIR.matches(mediaName)){
-            throw new  ExistException("Video does not exist.");
-        }
         if (!mediaRepository.existsByMediaUrl(mediaName)) {
             throw new ExistException("Video does not exist.");
         }
@@ -148,8 +150,8 @@ public class MediaService {
         return true;
     }
 
-    private boolean isValidNumberOfVideo(List<Media> video, MultipartFile media) throws InvalidPostException {
-        if(video.size() > 0 || !media.getOriginalFilename().endsWith(".mp4")){
+    private boolean isValidNumberOfVideo(List<Media> video) throws InvalidPostException {
+        if(video.size() > 0 ){
             throw new InvalidPostException("Cannot upload more than 1 video.");
         }
         return true;

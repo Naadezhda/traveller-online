@@ -25,11 +25,8 @@ public class UserController extends BaseController {
     @Autowired private UserService userService;
 
     @PostMapping(value = "/register")
-    public RegisterDTO userRegistration(@RequestBody User user, HttpSession session) throws Exception {
-        RegisterDTO registerDTO = userService.register(user);
-        session.setAttribute("User", user);
-        session.setAttribute("Username", user.getUsername());
-        return registerDTO;
+    public RegisterDTO userRegistration(@RequestBody RegisterInformationDTO registerInformation) throws Exception {
+        return userService.register(registerInformation);
     }
 
     @RequestMapping(value = "/register/{userId}/{secureCode}")
@@ -42,7 +39,7 @@ public class UserController extends BaseController {
 
     @PostMapping(value = "/login")
     public UserLoginDTO userLogin(@RequestBody LoginDTO loginDTO, HttpSession session) throws BaseException {
-        User user = userRepository.findByUsername(loginDTO.getUsername());
+        User user = userRepository.findByUsername(loginDTO.getUsername().trim());
         if (!isLoggedIn(session)) {
             userService.validateUsernameAndPassword(loginDTO.getUsername().trim(), loginDTO.getPassword().trim());
             if(user.isCompleted()) {
@@ -113,7 +110,7 @@ public class UserController extends BaseController {
         if(isLoggedIn(session)){
             throw new UserActivityException("You can not reset your password while you are logged in");
         }
-        return userService.resetPassword(userId, resetPassword.getNewPassword(),resetPassword.getVerifyNewPassword());
+        return userService.resetPassword(userId, resetPassword.getNewPassword().trim(),resetPassword.getVerifyNewPassword().trim());
     }
 
     @PutMapping(value = "/profile/edit/email")

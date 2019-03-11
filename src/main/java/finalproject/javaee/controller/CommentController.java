@@ -1,5 +1,7 @@
 package finalproject.javaee.controller;
+import finalproject.javaee.dto.MessageDTO;
 import finalproject.javaee.dto.pojoDTO.CommentDTO;
+import finalproject.javaee.dto.pojoDTO.InputCommentDTO;
 import finalproject.javaee.model.pojo.User;
 import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.util.exceptions.BaseException;
@@ -7,6 +9,7 @@ import finalproject.javaee.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.mail.Message;
 import javax.servlet.http.HttpSession;
 
 @RestController
@@ -17,7 +20,7 @@ public class CommentController extends BaseController{
     @Autowired private CommentService commentService;
 
     @PostMapping(value = "/comment/posts/{id}")
-    public CommentDTO postComment(@PathVariable("id") long id, @RequestBody String comment, HttpSession session) throws BaseException {
+    public CommentDTO postComment(@PathVariable("id") long id, @RequestBody InputCommentDTO comment, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return commentService.writeComment(user, id, comment);
     }
@@ -29,15 +32,15 @@ public class CommentController extends BaseController{
     }
 
     @PostMapping(value = "/comments/{commentId}/like/posts/{id}")
-    public void likeComment(@PathVariable("id") long postId, @PathVariable("commentId") long commentId, HttpSession session) throws BaseException {
+    public MessageDTO likeComment(@PathVariable("id") long postId, @PathVariable("commentId") long commentId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
-        commentService.likeComment(user, postId, commentId);
+        return commentService.likeComment(user, postId, commentId);
     }
 
-    @DeleteMapping(value = "/comments/{commentId}/like/posts/{id}")
-    public void dislikeComment(@PathVariable("id") long postId, @PathVariable("commentId") long commentId, HttpSession session) throws BaseException {
+    @DeleteMapping(value = "/comments/{commentId}/dislike/posts/{id}")
+    public MessageDTO dislikeComment(@PathVariable("id") long postId, @PathVariable("commentId") long commentId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
-        commentService.dislikeComment(user, postId, commentId);
+        return commentService.dislikeComment(user, postId, commentId);
     }
 
 }
