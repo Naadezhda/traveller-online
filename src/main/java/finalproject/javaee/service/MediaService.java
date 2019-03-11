@@ -30,6 +30,7 @@ import java.util.List;
 public class MediaService {
 
     public static final String MEDIA_DIR = "C:\\Users\\Надежда\\Desktop\\Upload\\";
+//    public static final String MEDIA_DIR = "C:\\Users\\Vicky\\Desktop\\Upload\\";
 
     @Autowired private UserRepository userRepository;
     @Autowired private PostRepository postRepository;

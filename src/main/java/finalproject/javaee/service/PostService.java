@@ -12,7 +12,6 @@ import finalproject.javaee.model.pojo.*;
 import finalproject.javaee.model.repository.*;
 import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
-import finalproject.javaee.util.exceptions.usersExceptions.InvalidInputException;
 import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -54,7 +53,7 @@ public class PostService {
                 getAllUserPosts(user.getId()));
     }
 
-    public PostWithMediaDTO  addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
+    public PostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
         validateIfLocationExist(dto.getLocationId());
         validateIfCategoryExist(dto.getCategoriesId());
         Post p = new Post(user.getId(), dto.getDescription(), dto.getLocationId(), dto.getCategoriesId());
