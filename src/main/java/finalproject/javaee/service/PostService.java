@@ -16,24 +16,22 @@ import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-@Transactional(rollbackOn = BaseException.class)
 public class PostService {
 
     @Autowired private PostRepository postRepository;
     @Autowired private MediaRepository mediaRepository;
     @Autowired private UserRepository userRepository;
-    @Autowired private SearchController searchController;
     @Autowired private UserService userService;
     @Autowired private LocationRepository locationRepository;
     @Autowired private CountryRepository countryRepository;
     @Autowired private CategoryRepository categoryRepository;
 
-    public List<PostWithUserAndMediaDTO> getAllPostsByCategory(User user, long categoryId) {
+    public List<PostWithUserAndMediaDTO> getAllPostsByCategory(User user, long categoryId) throws BaseException {
+        validateIfCategoryExist(categoryId);
         List<ViewUserRelationsDTO> users = userService.getAllUserFollowing(user);
         List<PostWithUserAndMediaDTO> postsByFollowingWithMedia = new ArrayList<>();
         for (ViewUserRelationsDTO u : users) {
@@ -42,15 +40,6 @@ public class PostService {
             postsByFollowingWithMedia.addAll(postsByUserWithMedia);
         }
         return postsByFollowingWithMedia;
-    }
-
-    public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
-        userService.validateIfUserExist(userId);
-        User user = userRepository.findById(userId);
-        return new ViewUserProfileDTO(user.getUsername(), user.getPhoto(),
-                userService.getAllUserFollowing(user),
-                userService.getAllUserFollowers(user),
-                getAllUserPosts(user.getId()));
     }
 
     public PostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
@@ -89,15 +78,12 @@ public class PostService {
         return postWithMedia;
     }
 
-    public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) { //TODO
+    public List<PostWithUserAndMediaDTO> getAllPostsByFollowings(User user) {
         List<ViewUserRelationsDTO> users = userService.getAllUserFollowing(user);
         List<PostWithUserAndMediaDTO> allPostsByFollowings = new ArrayList<>();
         for (ViewUserRelationsDTO u : users) {
             List<Post> postsByFollowing = postRepository.findAllByUserId(u.getId());
             allPostsByFollowings.addAll(getPostsByUserWithMedia(u, postsByFollowing));
-            /*if(!postsByFollowing.isEmpty()) {
-                allPostsByFollowings.addAll(getPostsByUserWithMedia(u, postsByFollowing));
-            }*/
         }
         return allPostsByFollowings;
     }
@@ -178,18 +164,13 @@ public class PostService {
         return mediaDtos;
     }
 
-    public ViewUserProfileDTO viewProfile(long id) throws BaseException {
-        userService.validateIfUserExist(id);
-        User u = userRepository.findById(id);
-        List<Post> posts = postRepository.findAllByUserId(u.getId());
-        List<PostWithMediaDTO> postsWithMedia = new ArrayList<>();
-        for (Post p : posts) {
-            postsWithMedia.add(searchController.postToPostWithMediaDTO(p));
-        }
-        return new ViewUserProfileDTO(u.getUsername(), u.getPhoto(),
-                userService.getAllUserFollowing(u),
-                userService.getAllUserFollowers(u),
-                postsWithMedia);
+    public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
+        userService.validateIfUserExist(userId);
+        User user = userRepository.findById(userId);
+        return new ViewUserProfileDTO(user.getUsername(), user.getPhoto(),
+                userService.getAllUserFollowing(user),
+                userService.getAllUserFollowers(user),
+                getAllUserPosts(user.getId()));
     }
 
     public List<PostWithUserAndMediaDTO> getTaggedPosts(long id) throws BaseException {

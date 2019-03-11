@@ -18,13 +18,11 @@ import org.springframework.stereotype.Service;
 
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 @Service
-@Transactional(rollbackOn = BaseException.class)
 public class UserService {
 
     static Logger logger = Logger.getLogger(UserService.class.getName());
@@ -98,7 +96,7 @@ public class UserService {
     public MessageDTO unfollowUser(User user, long id) throws BaseException {
         User unfollowingUser = userRepository.findById(id);
         if(unfollowingUser == user){
-            throw new InvalidInputException("You can not follow/unfolow yourself");
+            throw new InvalidInputException("You can not follow/unfollow yourself");
         }
         if (userRepository.existsById(id)) {
             if (user.getFollowing().contains(unfollowingUser)) {

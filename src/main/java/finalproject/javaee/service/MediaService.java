@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.transaction.Transactional;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,11 +25,10 @@ import java.util.Base64;
 import java.util.List;
 
 @Service
-@Transactional(rollbackOn = BaseException.class)
 public class MediaService {
 
-    public static final String MEDIA_DIR = "C:\\Users\\Надежда\\Desktop\\Upload\\";
-//    public static final String MEDIA_DIR = "C:\\Users\\Vicky\\Desktop\\Upload\\";
+    //public static final String MEDIA_DIR = "C:\\Users\\Надежда\\Desktop\\Upload\\";
+    public static final String MEDIA_DIR = "C:\\Users\\Vicky\\Desktop\\Upload\\";
 
     @Autowired private UserRepository userRepository;
     @Autowired private PostRepository postRepository;

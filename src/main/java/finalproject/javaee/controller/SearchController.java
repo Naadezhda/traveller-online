@@ -55,9 +55,6 @@ public class SearchController extends BaseController {
     public PostWithMediaDTO postToPostWithMediaDTO(Post p){
         List<Media> media = mediaRepository.findAllByPostId(p.getId());
         List<MediaDTO> mediaDtos = postService.listMediaToDTO(media);
-        /*for (Media m : media) {
-            mediaDtos.add(m.toDTO());
-        }*/
         return new PostWithMediaDTO(postService.postToPostDTO(p), mediaDtos);
     }
 
