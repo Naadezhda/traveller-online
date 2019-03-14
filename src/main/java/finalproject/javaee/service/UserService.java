@@ -96,7 +96,7 @@ public class UserService {
     public MessageDTO unfollowUser(User user, long id) throws BaseException {
         User unfollowingUser = userRepository.findById(id);
         if(unfollowingUser == user){
-            throw new InvalidInputException("You can not follow/unfolow yourself");
+            throw new InvalidInputException("You can not follow/unfollow yourself");
         }
         if (userRepository.existsById(id)) {
             if (user.getFollowing().contains(unfollowingUser)) {

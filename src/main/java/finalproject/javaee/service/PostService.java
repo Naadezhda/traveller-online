@@ -1,6 +1,5 @@
 package finalproject.javaee.service;
 
-import finalproject.javaee.controller.SearchController;
 import finalproject.javaee.dto.*;
 import finalproject.javaee.dto.pojoDTO.CountryDTO;
 import finalproject.javaee.dto.pojoDTO.LocationDTO;
@@ -30,7 +29,8 @@ public class PostService {
     @Autowired private CountryRepository countryRepository;
     @Autowired private CategoryRepository categoryRepository;
 
-    public List<PostWithUserAndMediaDTO> getAllPostsByCategory(User user, long categoryId) {
+    public List<PostWithUserAndMediaDTO> getAllPostsByCategory(User user, long categoryId) throws BaseException {
+        validateIfCategoryExist(categoryId);
         List<ViewUserRelationsDTO> users = userService.getAllUserFollowing(user);
         List<PostWithUserAndMediaDTO> postsByFollowingWithMedia = new ArrayList<>();
         for (ViewUserRelationsDTO u : users) {
@@ -39,15 +39,6 @@ public class PostService {
             postsByFollowingWithMedia.addAll(postsByUserWithMedia);
         }
         return postsByFollowingWithMedia;
-    }
-
-    public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
-        userService.validateIfUserExist(userId);
-        User user = userRepository.findById(userId);
-        return new ViewUserProfileDTO(user.getUsername(), user.getPhoto(),
-                userService.getAllUserFollowing(user),
-                userService.getAllUserFollowers(user),
-                getAllUserPosts(user.getId()));
     }
 
     public PostWithMediaDTO addUserPost(User user, AddPostWithMediaDTO dto) throws BaseException {
@@ -170,6 +161,15 @@ public class PostService {
             mediaDtos.add(new MediaDTO(m.getMediaUrl()));
         }
         return mediaDtos;
+    }
+
+    public ViewUserProfileDTO viewUserProfile(long userId) throws BaseException{
+        userService.validateIfUserExist(userId);
+        User user = userRepository.findById(userId);
+        return new ViewUserProfileDTO(user.getUsername(), user.getPhoto(),
+                userService.getAllUserFollowing(user),
+                userService.getAllUserFollowers(user),
+                getAllUserPosts(user.getId()));
     }
 
     public List<PostWithUserAndMediaDTO> getTaggedPosts(long id) throws BaseException {

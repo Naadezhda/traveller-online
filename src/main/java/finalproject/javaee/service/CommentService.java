@@ -14,10 +14,9 @@ import finalproject.javaee.util.exceptions.postsExceptions.IllegalCommentExcepti
 import finalproject.javaee.util.exceptions.postsExceptions.InvalidPostException;
 import finalproject.javaee.util.exceptions.postsExceptions.LikedPostException;
 import finalproject.javaee.util.exceptions.postsExceptions.NotLikedPostException;
+import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
 
 @Service
 public class CommentService {
@@ -25,8 +24,10 @@ public class CommentService {
     @Autowired private PostRepository postRepository;
     @Autowired private CommentRepository commentRepository;
     @Autowired private UserRepository userRepository;
+    @Autowired private PostService postService;
 
-    public CommentDTO writeComment(User user, long id, InputCommentDTO comment){
+    public CommentDTO writeComment(User user, long id, InputCommentDTO comment) throws BaseException{
+        postService.validateIfPostExist(id);
         Post post = postRepository.findById(id);
         Comment com = new Comment(user.getId(), post.getId(), comment.getComment());
         commentRepository.save(com);
@@ -34,6 +35,7 @@ public class CommentService {
     }
 
     public CommentDTO deleteComment(User user, long id, long commentId) throws BaseException {
+        validateIfCommentExists(commentId);
         Comment com = commentRepository.findById(commentId);
         if (commentRepository.findAllByPostId(id).contains(com)) {
             if (com.getUserId() == user.getId()) {
@@ -46,6 +48,8 @@ public class CommentService {
     }
 
     public MessageDTO likeComment(User user, long postId, long commentId) throws BaseException {
+        postService.validateIfPostExist(postId);
+        validateIfCommentExists(commentId);
         Comment comment = commentRepository.findById(commentId);
         if (!comment.getUsersWhoLiked().contains(user)) {
             if (comment.getPostId() == postId) {
@@ -61,6 +65,8 @@ public class CommentService {
     }
 
     public MessageDTO dislikeComment(User user, long postId, long commentId) throws BaseException {
+        postService.validateIfPostExist(postId);
+        validateIfCommentExists(commentId);
         Comment comment = commentRepository.findById(commentId);
         if (comment.getUsersWhoLiked().contains(user)) {
             if (comment.getPostId() == postId) {
@@ -73,6 +79,12 @@ public class CommentService {
             else throw new InvalidPostException("This post doest't have such a comment");
         }
         else throw new NotLikedPostException("Not liked this comment.");
+    }
+
+    private void validateIfCommentExists(long commentId) throws BaseException{
+        if(!commentRepository.existsById(commentId)){
+            throw new ExistException("There is no such a comment");
+        }
     }
 
 }

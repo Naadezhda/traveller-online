@@ -26,7 +26,6 @@ public class PostController extends BaseController {
     @Autowired private UserController userController;
     @Autowired private PostService postService;
 
-
     @GetMapping(value = "/posts/{id}")
     public PostWithMediaDTO getPostByPostId(@PathVariable("id") long id, HttpSession session) throws BaseException {
         userController.getLoggedUserByIdSession(session);
@@ -95,5 +94,4 @@ public class PostController extends BaseController {
         userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.getTaggedPosts(id);
     }
-
 }

@@ -1,2 +1,1 @@
-[ERROR] 2019-03-14 14:11:00,027 finalproject.javaee.controller.BaseController.handleRegistrationErrors(BaseController.java:36) - Cannot upload more than 3 photos.
-[ERROR] 2019-03-14 14:11:05,148 finalproject.javaee.controller.BaseController.handleRegistrationErrors(BaseController.java:36) - Cannot upload more than 1 video.
+
