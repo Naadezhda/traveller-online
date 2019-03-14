@@ -26,11 +26,6 @@ public class PostController extends BaseController {
     @Autowired private UserController userController;
     @Autowired private PostService postService;
 
-    @GetMapping(value = "/posts/users/{userId}")
-    public ViewUserProfileDTO getProfileByUserId(@PathVariable("userId") long id, HttpSession session) throws BaseException {
-        userController.getLoggedUserByIdSession(session);
-        return postService.viewProfile(id);
-    }
 
     @GetMapping(value = "/posts/{id}")
     public PostWithMediaDTO getPostByPostId(@PathVariable("id") long id, HttpSession session) throws BaseException {
@@ -89,7 +84,7 @@ public class PostController extends BaseController {
         return postService.likeUserPost(user, id);
     }
 
-    @PostMapping(value = "/posts/{id}/dislike")
+    @DeleteMapping(value = "/posts/{id}/dislike")
     public MessageDTO dislikePost(@PathVariable("id") long id, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
         return postService.dislikeUserPost(user, id);

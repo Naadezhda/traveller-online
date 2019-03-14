@@ -10,6 +10,7 @@ import finalproject.javaee.model.repository.UserRepository;
 import finalproject.javaee.util.exceptions.BaseException;
 import finalproject.javaee.util.exceptions.postsExceptions.InvalidPostException;
 import finalproject.javaee.util.exceptions.usersExceptions.ExistException;
+import finalproject.javaee.util.exceptions.usersExceptions.InvalidInputException;
 import finalproject.javaee.util.exceptions.usersExceptions.NotLoggedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,21 +25,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Service
-@Transactional(rollbackOn = BaseException.class)
 public class MediaService {
 
     public static final String MEDIA_DIR = "C:\\Users\\Надежда\\Desktop\\Upload\\";
-//    public static final String MEDIA_DIR = "C:\\Users\\Vicky\\Desktop\\Upload\\";
+    public static final String IMAGE_PATTERN = "([^\\s]+(\\.(?i)(jpg|png|gif|bmp))$)";
+    public static final String VIDEO_PATTERN = "([^\\s]+(\\.(?i)(3gp|mp4|m4v|avi))$)";
 
     @Autowired private UserRepository userRepository;
     @Autowired private PostRepository postRepository;
     @Autowired private PostService postService;
     @Autowired private MediaRepository mediaRepository;
 
-    public MessageDTO addPhoto(User user, MultipartFile image) throws IOException {
+    public MessageDTO addPhoto(User user, MultipartFile image) throws IOException, InvalidInputException {
         validateMedia(image);
+        formatImages(image.getOriginalFilename());
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
         String mediaUri = readFile(image, fileName);
         user.setPhoto(mediaUri);
@@ -55,7 +58,7 @@ public class MediaService {
         }
         String fileName = user.getId() + System.currentTimeMillis() + ".png";
         List<Media> images = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".png", postId);
-        isValidNumberOfPhotos(images);
+        isValidNumberOfPhotos(images,image);
         String mediaUri = readFile(image, fileName);
         Media media = new Media(post.getId(), mediaUri);
         mediaRepository.save(media);
@@ -71,7 +74,7 @@ public class MediaService {
         }
         String fileName = user.getId() + System.currentTimeMillis() + ".mp4";
         List<Media> findVideo = mediaRepository.findAllByMediaUrlEndingWithAndPostId(".mp4", postId);
-        isValidNumberOfVideo(findVideo);
+        isValidNumberOfVideo(findVideo,video);
         String videoUri = readFile(video, fileName);
         Media media = new Media(post.getId(), videoUri);
         mediaRepository.save(media);
@@ -135,7 +138,7 @@ public class MediaService {
         return new MessageDTO("Delete media successful.");
     }
 
-    public void validateMedia(MultipartFile media) throws MaxUploadSizeExceededException, IOException {
+    public void validateMedia(MultipartFile media) throws MaxUploadSizeExceededException {
         if (media.isEmpty()){
             throw new MultipartException("Invalid media size.");
         }
@@ -144,17 +147,33 @@ public class MediaService {
         }
     }
 
-    private boolean isValidNumberOfPhotos(List<Media> photos) throws InvalidPostException {
-        if (photos.size() > 2) {
+    private boolean isValidNumberOfPhotos(List<Media> photos,MultipartFile media) throws InvalidPostException, InvalidInputException {
+        formatImages(media.getOriginalFilename());
+        if (photos.size() > 2 ) {
             throw new InvalidPostException("Cannot upload more than 3 photos.");
         }
         return true;
     }
 
-    private boolean isValidNumberOfVideo(List<Media> video) throws InvalidPostException {
+    private boolean isValidNumberOfVideo(List<Media> video,MultipartFile media) throws InvalidPostException, InvalidInputException {
+        formatVideo(media.getOriginalFilename());
         if(video.size() > 0 ){
             throw new InvalidPostException("Cannot upload more than 1 video.");
         }
         return true;
+    }
+
+    private void formatImages(String media) throws InvalidInputException {
+        Pattern p = Pattern.compile(IMAGE_PATTERN);
+        if(!p.matcher(media).find()){
+            throw new InvalidInputException("Invalid images upload.");
+        }
+    }
+
+    private void formatVideo(String media) throws InvalidInputException {
+        Pattern p = Pattern.compile(VIDEO_PATTERN);
+        if(!p.matcher(media).find()){
+            throw new InvalidInputException("Invalid images upload.");
+        }
     }
 }

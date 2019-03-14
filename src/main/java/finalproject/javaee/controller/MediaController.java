@@ -56,7 +56,7 @@ public class MediaController extends BaseController {
         return mediaService.deletePhoto(user);
     }
 
-    @DeleteMapping(value = "/images/posts/{postId}/{mediaId}")
+    @DeleteMapping(value = "/images/posts/{postId}/media/{mediaId}")
     public MessageDTO deleteMedia(@PathVariable("postId") long postId,
                                        @PathVariable("mediaId") long mediaId, HttpSession session) throws BaseException {
         User user = userRepository.findById(userController.getLoggedUserByIdSession(session));
